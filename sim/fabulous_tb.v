@@ -6,7 +6,7 @@ module fab_tb;
     wire [63:0] A_cfg, B_cfg;
 
     reg CLK = 1'b0;
-    wire clk_sel = 2'b00; // external clock
+    wire [1:0] clk_sel = 2'b00; // external clock
     reg resetn = 1'b1;
     reg Rx = 1'b1;
     wire ComActive;
@@ -25,17 +25,18 @@ module fab_tb;
         .user_clock2(1'b0),
         .wbs_dat_i(32'b0),
         .wbs_adr_i(32'b0),
-        .wbs_dat_o(32'b0),
+        .wbs_dat_o(),
         .la_data_out(),
         .io_in(io_in),
         .io_out(io_out),
-        .io_oeb(io_oeb),
+        .io_oeb(io_oeb)
     );
 
     assign io_in[5:0] = {Rx, s_data, s_clk, clk_sel, CLK};
-    assign ReceiveLED = io_in[6];
-    assign I_top = io_in[37:7];
-    assign O_top = io_out[37:7];
+    assign ReceiveLED = io_out[6];
+    assign io_in[37:7] = O_top;
+    assign I_top = io_out[37:7];
+    assign T_top = io_oeb[37:7];
 
     wire [30:0] I_top_gold, oeb_gold, T_top_gold;
     top dut_i (
@@ -52,8 +53,9 @@ module fab_tb;
 
     always #5000 CLK = (CLK === 1'b0);
 
-    integer i;
+    integer i, j;
     reg have_errors = 1'b0;
+    localparam [31:0] ctrl_word = 32'h0000FAB1;
     initial begin
 `ifdef CREATE_FST
         $dumpfile("fab_tb.fst");
@@ -64,10 +66,22 @@ module fab_tb;
         resetn = 1'b0;
         #10000;
         resetn = 1'b1;
+        s_clk = 1'b0;
         #10000;
         repeat (20) @(posedge CLK);
         #2500;
-        // TODO: model bitbang or UART configure
+        for (i = 0; i < MAX_BITBYTES; i = i + 4) begin
+            for (j = 0; j < 32; j = j + 1) begin
+                s_data = bitstream[i + (j / 8)][7 - (j % 8)]; // data bit
+                repeat (1) @(posedge CLK);
+                s_clk = 1'b1; // rising
+                repeat (1) @(posedge CLK);
+                s_data = ctrl_word[31-j];
+                repeat (1) @(posedge CLK);
+                s_clk = 1'b0;
+                repeat (2) @(posedge CLK);
+            end
+        end
         repeat (100) @(posedge CLK);
         O_top = 28'b1; // reset
         repeat (5) @(posedge CLK);
