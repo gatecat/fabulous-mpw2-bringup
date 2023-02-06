@@ -85,22 +85,48 @@ def run():
     data = slave.exchange([CARAVEL_STREAM_READ, 0x04], 4)
     print("   project ID = {:08x}".format(int.from_bytes(data, 'big')))
 
-    test_io = Pin("IO_0", Pin.IN)
+    # disable HKSPI
+    slave.write([CARAVEL_REG_WRITE, 0x6f, 0xff])
 
-    slave.set_mprj_mode(0, 0x1809) # GPIO_MODE_MGMT_STD_OUTPUT
-
-    slave.write([CARAVEL_REG_WRITE, 0x0e, 0x55])
-    slave.write([CARAVEL_REG_WRITE, 0x0f, 0xAA])
-    print("pll readback: {:04x}".format(int.from_bytes(slave.exchange([CARAVEL_REG_READ2, 0x0e], 2), 'big')))
-    mode_get = slave.exchange([CARAVEL_STREAM_READ, 0x1d], 2)
-    print("mode readback: {:04x}".format(int.from_bytes(mode_get, 'big')))
-
-    slave.yeet_mprj()
-    for i in range(5):
-        value = i%2
-        print(" set IO0 to {}".format(value))
-        slave.set_gpio(value & 0x1)
-        print(" got IO0 as {}".format(test_io.value()))
+    data = slave.exchange([CARAVEL_STREAM_READ, 0x03], 4)
+    print("   disabled ID = {:08x} (should be 00)".format(int.from_bytes(data, 'big')))
 
     slave.__init__(enabled=False)
+
+    fpga_clk = Pin('IO_0', mode=Pin.OUT, value=0)
+    fpga_clksel0 = Pin('IO_1', mode=Pin.OUT, value=0)
+    fpga_clksel1 = Pin('IO_2', mode=Pin.OUT, value=0)
+    fpga_sclk = Pin('IO_3', mode=Pin.OUT, value=0)
+    fpga_sdata = Pin('IO_4', mode=Pin.OUT, value=0)
+    fpga_rx = Pin('IO_5', mode=Pin.OUT, value=1)
+
+    fpga_rxled = Pin('IO_6', mode=Pin.IN)
+    last_rxled = False
+
+    fpga_clksel0.value(0)
+    fpga_clksel1.value(0)
+
+    def tog_clk():
+        nonlocal last_rxled
+        for i in range(8):
+            fpga_clk.value(0)
+            fpga_clk.value(1)
+            if fpga_rxled.value() != last_rxled:
+                print("fpga_rxled: {}".format(fpga_rxled.value()))
+                last_rxled = fpga_rxled.value()
+
+    ctrl_word = 0x0000FAB1
+
+    for i in range(10000):
+        for j in range(32):
+            fpga_sdata.value(0)
+            tog_clk()
+            fpga_sclk.value(1)
+            tog_clk()
+            fpga_sdata.value((ctrl_word >> (31-j)) & 0x1)
+            tog_clk()
+            fpga_sclk.value(0)
+            tog_clk()
+        print("word sent!")
+
 
