@@ -8,6 +8,8 @@ from array import array as Array
 import binascii
 from io import StringIO
 
+from nucleo_api import Test
+
 from machine import Pin, SPI, SoftSPI, sleep, I2C, SoftI2C
 
 CARAVEL_PASSTHRU = 0xC4
@@ -15,7 +17,8 @@ CARAVEL_STREAM_READ = 0x40
 CARAVEL_STREAM_WRITE = 0x80
 CARAVEL_REG_READ = 0x48
 CARAVEL_REG_WRITE = 0x88
-
+CARAVEL_REG_READ2 = 0x50
+CARAVEL_REG_WRITE2 = 0x90
 
 
 class SPI:
@@ -26,7 +29,7 @@ class SPI:
             self.sck = Pin('SPI5_SCK', mode=Pin.OUT, value=0)
             self.mosi = Pin('SPI5_MISO', mode=Pin.OUT)  # PF9 = IO[2] = caravel input
             self.miso = Pin('SPI5_MOSI', mode=Pin.IN)  # PF8 = IO[1] = caravel output
-            self.spi = SoftSPI(baudrate=400000, polarity=0, phase=0, sck=self.sck, mosi=self.mosi, miso=self.miso)
+            self.spi = SoftSPI(baudrate=00000, polarity=0, phase=0, sck=self.sck, mosi=self.mosi, miso=self.miso)
         else:
             self.cs = Pin('SPI5_CS', mode=Pin.IN, pull=None)
             self.sck = Pin('SPI5_SCK', mode=Pin.IN, pull=None)
@@ -54,9 +57,18 @@ class SPI:
 
     def set_gpio(self, value):
         for i in range(4):
-            self.write([CARAVEL_REG_WRITE, 0x6d-i, (value >> (8*i)) & 0xFF])
+            self.write([CARAVEL_STREAM_WRITE, 0x6d-i, (value >> (8*i)) & 0xFF])
+
+    def set_mprj_mode(self, io, value):
+        self.write([CARAVEL_STREAM_WRITE, 0x1d+2*io+0, (value >> 8) & 0x1F])
+        self.write([CARAVEL_STREAM_WRITE, 0x1d+2*io+1, value & 0xFF])
+
+    def yeet_mprj(self):
+        self.write([CARAVEL_STREAM_WRITE, 0x13, 1])
+        time.sleep(0.1)
 
 def run():
+    print("Powering up...")
     slave = SPI()
     # in some cases, you may need to comment or uncomment this line
     #slave.write([CARAVEL_REG_WRITE, 0x0b, 0x01])
@@ -73,14 +85,22 @@ def run():
     data = slave.exchange([CARAVEL_STREAM_READ, 0x04], 4)
     print("   project ID = {:08x}".format(int.from_bytes(data, 'big')))
 
-    slave.set_gpio(0x1)
-    time.sleep(0.5)
-    slave.set_gpio(0x0)
-    time.sleep(0.5)
-    slave.set_gpio(0x1)
-    time.sleep(0.5)
-    slave.set_gpio(0x0)
-    time.sleep(0.5)
+    test_io = Pin("IO_0", Pin.IN)
+
+    slave.set_mprj_mode(0, 0x1809) # GPIO_MODE_MGMT_STD_OUTPUT
+
+    slave.write([CARAVEL_REG_WRITE, 0x0e, 0x55])
+    slave.write([CARAVEL_REG_WRITE, 0x0f, 0xAA])
+    print("pll readback: {:04x}".format(int.from_bytes(slave.exchange([CARAVEL_REG_READ2, 0x0e], 2), 'big')))
+    mode_get = slave.exchange([CARAVEL_STREAM_READ, 0x1d], 2)
+    print("mode readback: {:04x}".format(int.from_bytes(mode_get, 'big')))
+
+    slave.yeet_mprj()
+    for i in range(5):
+        value = i%2
+        print(" set IO0 to {}".format(value))
+        slave.set_gpio(value & 0x1)
+        print(" got IO0 as {}".format(test_io.value()))
 
     slave.__init__(enabled=False)
 
