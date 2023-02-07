@@ -103,7 +103,8 @@ def run():
     fpga_rxled = Pin('IO_13', mode=Pin.IN, pull=0)
     last_rxled = False
 
-    fpga_clksel0.value(0)
+    # use fast clock for configuration
+    fpga_clksel0.value(1)
     fpga_clksel1.value(0)
 
     def tog_clk():
@@ -117,25 +118,31 @@ def run():
 
     # load bitstream, check receive LED
     ctrl_word = 0x0000FAB1
+    # make sure we start desynced
+    data = bytes(0xFF for i in range(128))
     with open("counter.bin", mode='rb') as f:
-        data = f.read()
+        data += f.read()
     for i, byte in enumerate(data):
         for j in range(8):
             fpga_sdata.value((byte >> (7-j)) & 0x1)
-            tog_clk()
+            # tog_clk()
             fpga_sclk.value(1)
-            tog_clk()
+            # tog_clk()
             fpga_sdata.value((ctrl_word >> (31-(8*(i%4) + j))) & 0x1)
-            tog_clk()
+            # tog_clk()
             fpga_sclk.value(0)
-            tog_clk()
+            # tog_clk()
         if (i % 100) == 0:
             print("{}".format(i))
+
+    # use slow clock for running
+    fpga_clksel0.value(0)
+    fpga_clksel1.value(0)
 
     fpga_rst = Pin('IO_14', mode=Pin.OUT, value=0)
     fpga_data = [Pin('IO_{}'.format(i), mode=Pin.IN) for i in range(15, 38)]
     for i in range(1000):
-        fpga_rst.value(1 if i < 100 else 0)
+        fpga_rst.value(1 if i < 10 else 0)
         fpga_clk.value(0)
         fpga_clk.value(1)
         b = 0
@@ -143,3 +150,4 @@ def run():
             if p.value():
                 b |= (1 << k)
         print("data: {:023b}".format(b))
+        time.sleep(0.01)

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -ex
 
 mpy-cross caravel_spi.py
 cp caravel_spi.mpy ${FLASH}
