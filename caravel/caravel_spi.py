@@ -111,23 +111,35 @@ def run():
         for i in range(4):
             fpga_clk.value(0)
             fpga_clk.value(1)
-            if fpga_rxled.value() != last_rxled:
-                print("fpga_rxled: {}".format(fpga_rxled.value()))
-                last_rxled = fpga_rxled.value()
+            # if fpga_rxled.value() != last_rxled:
+            #    print("fpga_rxled: {}".format(fpga_rxled.value()))
+            #    last_rxled = fpga_rxled.value()
 
     # load bitstream, check receive LED
-    for i in range(10000):
-        ctrl_word = 0x0000FAB1
-        for j in range(32):
-            fpga_sdata.value(0)
+    ctrl_word = 0x0000FAB1
+    with open("counter.bin", mode='rb') as f:
+        data = f.read()
+    for i, byte in enumerate(data):
+        for j in range(8):
+            fpga_sdata.value((byte >> (7-j)) & 0x1)
             tog_clk()
             fpga_sclk.value(1)
             tog_clk()
-            fpga_sdata.value((ctrl_word >> (31-j)) & 0x1)
+            fpga_sdata.value((ctrl_word >> (31-(8*(i%4) + j))) & 0x1)
             tog_clk()
             fpga_sclk.value(0)
             tog_clk()
+        if (i % 100) == 0:
+            print("{}".format(i))
 
-        print("word sent!")
-
-
+    fpga_rst = Pin('IO_14', mode=Pin.OUT, value=0)
+    fpga_data = [Pin('IO_{}'.format(i), mode=Pin.IN) for i in range(15, 38)]
+    for i in range(1000):
+        fpga_rst.value(1 if i < 100 else 0)
+        fpga_clk.value(0)
+        fpga_clk.value(1)
+        b = 0
+        for k, p in enumerate(fpga_data):
+            if p.value():
+                b |= (1 << k)
+        print("data: {:023b}".format(b))
