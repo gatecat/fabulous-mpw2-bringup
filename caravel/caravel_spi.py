@@ -93,14 +93,14 @@ def run():
 
     slave.__init__(enabled=False)
 
-    fpga_clk = Pin('IO_0', mode=Pin.OUT, value=0)
-    fpga_clksel0 = Pin('IO_1', mode=Pin.OUT, value=0)
-    fpga_clksel1 = Pin('IO_2', mode=Pin.OUT, value=0)
-    fpga_sclk = Pin('IO_3', mode=Pin.OUT, value=0)
-    fpga_sdata = Pin('IO_4', mode=Pin.OUT, value=0)
-    fpga_rx = Pin('IO_5', mode=Pin.OUT, value=1)
+    fpga_clk = Pin('IO_7', mode=Pin.OUT, value=0)
+    fpga_clksel0 = Pin('IO_8', mode=Pin.OUT, value=0)
+    fpga_clksel1 = Pin('IO_9', mode=Pin.OUT, value=0)
+    fpga_sclk = Pin('IO_10', mode=Pin.OUT, value=0)
+    fpga_sdata = Pin('IO_11', mode=Pin.OUT, value=0)
+    fpga_rx = Pin('IO_12', mode=Pin.OUT, value=1)
 
-    fpga_rxled = Pin('IO_6', mode=Pin.IN, pull=0)
+    fpga_rxled = Pin('IO_13', mode=Pin.IN, pull=0)
     last_rxled = False
 
     fpga_clksel0.value(0)
@@ -108,15 +108,16 @@ def run():
 
     def tog_clk():
         nonlocal last_rxled
-        for i in range(8):
+        for i in range(4):
             fpga_clk.value(0)
             fpga_clk.value(1)
             if fpga_rxled.value() != last_rxled:
                 print("fpga_rxled: {}".format(fpga_rxled.value()))
                 last_rxled = fpga_rxled.value()
 
+    # load bitstream, check receive LED
     for i in range(10000):
-        ctrl_word = 0x0000FAB1 if (i % 4) != 0 else 0x0000FAB0
+        ctrl_word = 0x0000FAB1
         for j in range(32):
             fpga_sdata.value(0)
             tog_clk()
@@ -126,6 +127,7 @@ def run():
             tog_clk()
             fpga_sclk.value(0)
             tog_clk()
+
         print("word sent!")
 
 

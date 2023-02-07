@@ -93,22 +93,24 @@ def run():
 
     slave.__init__(enabled=False)
 
-    pins = [
-        Pin('IO_0', mode=Pin.OUT, value=0),
-        Pin('IO_1', mode=Pin.OUT, value=0),
-        Pin('IO_2', mode=Pin.OUT, value=0),
-        Pin('IO_3', mode=Pin.OUT, value=0),
-        Pin('IO_4', mode=Pin.OUT, value=0),
-        Pin('IO_5', mode=Pin.OUT, value=0),
+    la_pins = [
+        Pin('IO_32', mode=Pin.IN, pull=0),
+        Pin('IO_33', mode=Pin.IN, pull=0),
+        Pin('IO_34', mode=Pin.IN, pull=0),
+        Pin('IO_35', mode=Pin.IN, pull=0),
+        Pin('IO_36', mode=Pin.IN, pull=0),
+        Pin('IO_37', mode=Pin.IN, pull=0),
     ]
 
-    rx = Pin('IO_6', mode=Pin.IN, pull=0)
+    rx = Pin('IO_5', mode=Pin.OUT)
 
-    for i in range(3):
-        for j in range(32):
-            val = j ^ (j >> 1)
-            for k, p in enumerate(pins):
-                p.value((val >> k) & 0x1)
-            print("OUT={:06b} IN={}".format(val, rx.value()))
+    for i in range(16):
+        for x in range(2):
+            rx.value(x)
+            val = 0
+            for k, p in enumerate(la_pins):
+                if p.value(): val |= (1 << k)
+            time.sleep(0.25)
+            print("RX={} LA={:06b}".format(x, val))
             time.sleep(0.25)
 
