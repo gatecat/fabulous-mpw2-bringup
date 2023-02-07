@@ -93,39 +93,22 @@ def run():
 
     slave.__init__(enabled=False)
 
-    fpga_clk = Pin('IO_0', mode=Pin.OUT, value=0)
-    fpga_clksel0 = Pin('IO_1', mode=Pin.OUT, value=0)
-    fpga_clksel1 = Pin('IO_2', mode=Pin.OUT, value=0)
-    fpga_sclk = Pin('IO_3', mode=Pin.OUT, value=0)
-    fpga_sdata = Pin('IO_4', mode=Pin.OUT, value=0)
-    fpga_rx = Pin('IO_5', mode=Pin.OUT, value=1)
+    pins = [
+        Pin('IO_0', mode=Pin.OUT, value=0),
+        Pin('IO_1', mode=Pin.OUT, value=0),
+        Pin('IO_2', mode=Pin.OUT, value=0),
+        Pin('IO_3', mode=Pin.OUT, value=0),
+        Pin('IO_4', mode=Pin.OUT, value=0),
+        Pin('IO_5', mode=Pin.OUT, value=0),
+    ]
 
-    fpga_rxled = Pin('IO_6', mode=Pin.IN, pull=0)
-    last_rxled = False
+    rx = Pin('IO_6', mode=Pin.IN, pull=0)
 
-    fpga_clksel0.value(0)
-    fpga_clksel1.value(0)
-
-    def tog_clk():
-        nonlocal last_rxled
-        for i in range(8):
-            fpga_clk.value(0)
-            fpga_clk.value(1)
-            if fpga_rxled.value() != last_rxled:
-                print("fpga_rxled: {}".format(fpga_rxled.value()))
-                last_rxled = fpga_rxled.value()
-
-    for i in range(10000):
-        ctrl_word = 0x0000FAB1 if (i % 4) != 0 else 0x0000FAB0
+    for i in range(3):
         for j in range(32):
-            fpga_sdata.value(0)
-            tog_clk()
-            fpga_sclk.value(1)
-            tog_clk()
-            fpga_sdata.value((ctrl_word >> (31-j)) & 0x1)
-            tog_clk()
-            fpga_sclk.value(0)
-            tog_clk()
-        print("word sent!")
-
+            val = j ^ (j >> 1)
+            for k, p in enumerate(pins):
+                p.value((val >> k) & 0x1)
+            print("OUT={:06b} IN={}".format(val, rx.value()))
+            time.sleep(0.25)
 
