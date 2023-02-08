@@ -4,7 +4,7 @@ SYNTH_TCL=${HOME}/FABulous/fabric_cad/synth/synth_fabulous.tcl
 BIT_GEN=${HOME}/FABulous/fabric_cad/bit_gen.py
 
 
-DESIGN=counter
+DESIGN=${DESIGN:-counter}
 
 set -ex
 yosys -qp "tcl $SYNTH_TCL 4 top_wrapper test_design/${DESIGN}.json" test_design/${DESIGN}.v test_design/top_wrapper.v
