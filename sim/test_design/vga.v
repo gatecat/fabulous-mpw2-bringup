@@ -30,12 +30,15 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 		visible <= (hcnt < HVIS) && (vcnt < VVIS);
 	end 
 
+	reg [2:0] image[0:32*32-1];
+	initial $readmemh("out.hex", image);
+
 	reg r, g, b;
 	always @(posedge clk) begin
-		if (visible)
-			{r, g, b} <= (hcnt[4:3] + vcnt[5:4]);
+		if (vcnt <= 256 && (hcnt >= 64 && hcnt <= 192))
+			{r, g, b} <= image[{vcnt[7:3], hcnt[6:2] ^ 5'b10000}];
 		else
-			{r, b, b} <= 3'b000;
+			{r, g, b} <= 3'b000;
 	end
 
 	assign io_out[5:1] = {b, g, r, vsync, hsync};
