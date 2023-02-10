@@ -20,12 +20,12 @@ void set_registers() {
     reg_mprj_io_8 = 0x1fc;
     reg_mprj_io_7 = 0x1f8;
     reg_mprj_io_6 = 0x3f0;
-    reg_mprj_io_5 = 0x7e0;
-    reg_mprj_io_4 = 0xec0;
-    reg_mprj_io_3 = 0xd80;
-    reg_mprj_io_2 = 0x1900;
-    reg_mprj_io_1 = 0x1201;
-    reg_mprj_io_0 = 0x402;
+    reg_mprj_io_5 = 0x700;
+    reg_mprj_io_4 = 0x0;
+    reg_mprj_io_3 = 0x0;
+    reg_mprj_io_2 = 0x0;
+    reg_mprj_io_1 = 0x0;
+    reg_mprj_io_0 = 0x0;
     reg_mprj_io_19 = 0x0;
     reg_mprj_io_20 = 0x1e0;
     reg_mprj_io_21 = 0x3c0;
@@ -39,12 +39,12 @@ void set_registers() {
     reg_mprj_io_29 = 0xc;
     reg_mprj_io_30 = 0x18;
     reg_mprj_io_31 = 0x30;
-    reg_mprj_io_32 = 0xc0;
-    reg_mprj_io_33 = 0x180;
-    reg_mprj_io_34 = 0x300;
-    reg_mprj_io_35 = 0x600;
-    reg_mprj_io_36 = 0xc00;
-    reg_mprj_io_37 = 0x1801;
+    reg_mprj_io_32 = 0x60;
+    reg_mprj_io_33 = 0xc0;
+    reg_mprj_io_34 = 0x180;
+    reg_mprj_io_35 = 0x300;
+    reg_mprj_io_36 = 0x600;
+    reg_mprj_io_37 = 0xc00;
 
     reg_mprj_xfer = 1;
     while ((reg_mprj_xfer & 0x1) == 1);
@@ -66,10 +66,6 @@ void main()
     reg_gpio_out = 1; // OFF
 
 	while(1) {
-        uint32_t la =  reg_la0_data;
-        reg_mprj_datah = la;
-        reg_mprj_datal = 0;
-        reg_gpio_out = ((la >> 1) & 0x1);
 	}
 
 }
