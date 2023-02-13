@@ -144,10 +144,10 @@ def run():
     for i in range(1000):
         fpga_rst.value(1 if i < 10 else 0)
         fpga_clk.value(0)
-        fpga_clk.value(1)
         b = 0
         for k, p in enumerate(fpga_data):
             if p.value():
                 b |= (1 << k)
         print("data: {:023b}".format(b))
         time.sleep(0.01)
+        fpga_clk.value(1)
