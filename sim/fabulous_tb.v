@@ -71,6 +71,8 @@ module fab_tb;
         repeat (20) @(posedge CLK);
         #2500;
         for (i = 0; i < MAX_BITBYTES; i = i + 4) begin
+            if ((i % 100) == 0)
+                $display("bit %d", i);
             for (j = 0; j < 32; j = j + 1) begin
                 s_data = bitstream[i + (j / 8)][7 - (j % 8)]; // data bit
                 repeat (1) @(posedge CLK);

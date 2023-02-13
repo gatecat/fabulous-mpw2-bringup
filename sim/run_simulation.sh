@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -ex
-DESIGN=counter
+DESIGN=bram32
 BITSTREAM=test_design/${DESIGN}.bin
 VERILOG=../fabric/verilog
 MAX_BITBYTES=16384
