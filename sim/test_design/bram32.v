@@ -27,6 +27,27 @@ module top(input wire clk,
 	always @(posedge clk)
 		read_reg <= bram0_rd_data[7:0];
 
-	assign io_out = {ctr, read_reg, 1'b0}; // pass thru reset for debugging
+	wire [14:0] osc;
+	(* BEL="X1Y1.A" *) LUT1 #(.INIT(2'b1)) l0 (.I0(osc[0]), .O(osc[1]));
+	(* BEL="X1Y1.B" *) LUT1 #(.INIT(2'b1)) l1 (.I0(osc[1]), .O(osc[2]));
+	(* BEL="X1Y1.C" *) LUT1 #(.INIT(2'b1)) l2 (.I0(osc[2]), .O(osc[3]));
+	(* BEL="X1Y1.D" *) LUT1 #(.INIT(2'b1)) l3 (.I0(osc[3]), .O(osc[4]));
+	(* BEL="X1Y1.E" *) LUT1 #(.INIT(2'b1)) l4 (.I0(osc[4]), .O(osc[5]));
+	(* BEL="X1Y1.F" *) LUT1 #(.INIT(2'b1)) l5 (.I0(osc[5]), .O(osc[6]));
+	(* BEL="X1Y1.G" *) LUT1 #(.INIT(2'b1)) l6 (.I0(osc[6]), .O(osc[7]));
+	(* BEL="X1Y1.H" *) LUT1 #(.INIT(2'b1)) l7 (.I0(osc[7]), .O(osc[8]));
+	(* BEL="X1Y2.A" *) LUT1 #(.INIT(2'b1)) l8 (.I0(osc[8]), .O(osc[9]));
+	(* BEL="X1Y2.B" *) LUT1 #(.INIT(2'b1)) l9 (.I0(osc[9]), .O(osc[10]));
+	(* BEL="X1Y2.C" *) LUT1 #(.INIT(2'b1)) l10 (.I0(osc[10]), .O(osc[11]));
+	(* BEL="X1Y2.D" *) LUT1 #(.INIT(2'b1)) l11 (.I0(osc[11]), .O(osc[12]));
+	(* BEL="X1Y2.E" *) LUT1 #(.INIT(2'b1)) l12 (.I0(osc[12]), .O(osc[13]));
+	(* BEL="X1Y2.F" *) LUT1 #(.INIT(2'b1)) l13 (.I0(osc[13]), .O(osc[14]));
+	(* BEL="X1Y2.G" *) LUT1 #(.INIT(2'b1)) l14 (.I0(osc[14]), .O(osc[0]));
+
+	wire osco;
+	(* BEL="X1Y2.H" *) LUT1 #(.INIT(2'b1)) lo (.I0(osc[0]), .O(osco));
+
+	assign io_out[22:0] = {ctr, read_reg, 1'b0}; // pass thru reset for debugging
+	assign io_out[23] = osco;
 	assign io_oeb = ~(28'b1);
 endmodule

@@ -23,6 +23,6 @@ module top(input wire clk,
 	assign bram0_wr_data = {4{ctr}};
 	assign bram0_config = 8'b00010000; // 32-bit R/W, always write enable; 
 
-	assign io_out = {ctr, bram0_rd_data[7:0], 1'b0}; // pass thru reset for debugging
+	assign io_out = {ctr, bram0_rd_data[7:0], osco, 1'b0}; // pass thru reset for debugging
 	assign io_oeb = ~(28'b1);
 endmodule

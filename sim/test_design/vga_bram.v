@@ -61,7 +61,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 
 	reg [12:0] write_address, write_address_cnt;
 	reg [7:0] write_sr;
-	reg [7:0] write_strobe;
+	reg [7:0] write_strobe, write_strobe_reg;
 	reg [2:0] write_bit;
 
 	assign {bram0_rd_addr, bram1_rd_addr, bram2_rd_addr, bram3_rd_addr, bram4_rd_addr, bram5_rd_addr, bram6_rd_addr, bram7_rd_addr} = {8{read_address[8:1]}};
@@ -69,11 +69,11 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 
 	assign {bram0_wr_data[7:0], bram1_wr_data[7:0], bram2_wr_data[7:0], bram3_wr_data[7:0], bram4_wr_data[7:0], bram5_wr_data[7:0], bram6_wr_data[7:0], bram7_wr_data[7:0]} = {8{write_sr[7:0]}};
 
-	assign {bram7_wr_data[20], bram6_wr_data[20], bram5_wr_data[20], bram4_wr_data[20], bram3_wr_data[20], bram2_wr_data[20], bram1_wr_data[20], bram0_wr_data[20]} = write_strobe;
+	assign {bram7_wr_data[20], bram6_wr_data[20], bram5_wr_data[20], bram4_wr_data[20], bram3_wr_data[20], bram2_wr_data[20], bram1_wr_data[20], bram0_wr_data[20]} = write_strobe_reg;
 	assign {bram7_wr_data[25:24], bram6_wr_data[25:24], bram5_wr_data[25:24], bram4_wr_data[25:24], bram3_wr_data[25:24], bram2_wr_data[25:24], bram1_wr_data[25:24], bram0_wr_data[25:24]} = {8{read_address[10:9]}};
 	assign {bram7_wr_data[17:16], bram6_wr_data[17:16], bram5_wr_data[17:16], bram4_wr_data[17:16], bram3_wr_data[17:16], bram2_wr_data[17:16], bram1_wr_data[17:16], bram0_wr_data[17:16]} = {8{write_address[9:8]}};
 
-	assign {bram0_config, bram1_config, bram2_config, bram3_config, bram4_config, bram5_config, bram6_config, bram7_config} = {8{8'b00000101}};
+	assign {bram0_config, bram1_config, bram2_config, bram3_config, bram4_config, bram5_config, bram6_config, bram7_config} = {8{8'b00100101}};
 
 
 	wire [63:0] bram_rd_data = {bram7_rd_data[7:0], bram6_rd_data[7:0], bram5_rd_data[7:0], bram4_rd_data[7:0], bram3_rd_data[7:0], bram2_rd_data[7:0], bram1_rd_data[7:0], bram0_rd_data[7:0]};
@@ -106,6 +106,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 			end
 		end
 		write_address <= write_address_cnt;
+		write_strobe_reg <= write_strobe;
 	end
 
 	assign io_oeb = ~(30'b11000001);
