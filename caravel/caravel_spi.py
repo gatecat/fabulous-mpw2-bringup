@@ -8,7 +8,7 @@ from array import array as Array
 import binascii
 from io import StringIO
 
-from nucleo_api import Test
+from nucleo_api import Test, ProgSupply
 
 from machine import Pin, SPI, SoftSPI, sleep, I2C, SoftI2C
 
@@ -92,6 +92,17 @@ def run():
     print("   disabled ID = {:08x} (should be 00)".format(int.from_bytes(data, 'big')))
 
     slave.__init__(enabled=False)
+
+    supply = ProgSupply()
+    # set vcc to 1.8V for better fabric perf
+    voltage = 1.8
+    R2 = 360 / ((voltage / 1.25) - 1)
+    Rpot = (1 / (1 / R2 - 1 / 5000)) - 500
+    P = Rpot / 38.911
+    Pval = int(P)
+
+    print('Writing ' + str(Pval) + ' to potentiometer.')
+    supply.write_1v8(Pval)
 
     fpga_clk = Pin('IO_7', mode=Pin.OUT, value=0)
     fpga_clksel0 = Pin('IO_8', mode=Pin.OUT, value=0)

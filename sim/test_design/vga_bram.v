@@ -19,13 +19,14 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	localparam VS = VFP+2;
 	localparam VT = 525;
 
-	reg [9:0] hcnt, vcnt;
+	reg [8:0] hcnt;
+	reg [9:0] vcnt;
 	reg visible;
 	reg hsync, vsync;
 
 	always @(posedge clk) begin
-		if (hcnt == (HT - 1)) begin
-			if (vcnt == (VT - 1)) begin
+		if (hcnt >= (HT - 1)) begin
+			if (vcnt >= (VT - 1)) begin
 				vcnt <= 0;
 			end else begin
 				vcnt <= vcnt + 1'b1;
@@ -59,9 +60,9 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	wire serial_clk = io_in[6];
 	wire serial_data = io_in[7];
 
-	reg [12:0] write_address, write_address_cnt;
+	reg [12:0] write_address;
 	reg [7:0] write_sr;
-	reg [7:0] write_strobe, write_strobe_reg;
+	reg [7:0] write_strobe;
 	reg [2:0] write_bit;
 
 	assign {bram0_rd_addr, bram1_rd_addr, bram2_rd_addr, bram3_rd_addr, bram4_rd_addr, bram5_rd_addr, bram6_rd_addr, bram7_rd_addr} = {8{read_address[8:1]}};
@@ -69,7 +70,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 
 	assign {bram0_wr_data[7:0], bram1_wr_data[7:0], bram2_wr_data[7:0], bram3_wr_data[7:0], bram4_wr_data[7:0], bram5_wr_data[7:0], bram6_wr_data[7:0], bram7_wr_data[7:0]} = {8{write_sr[7:0]}};
 
-	assign {bram7_wr_data[20], bram6_wr_data[20], bram5_wr_data[20], bram4_wr_data[20], bram3_wr_data[20], bram2_wr_data[20], bram1_wr_data[20], bram0_wr_data[20]} = write_strobe_reg;
+	assign {bram7_wr_data[20], bram6_wr_data[20], bram5_wr_data[20], bram4_wr_data[20], bram3_wr_data[20], bram2_wr_data[20], bram1_wr_data[20], bram0_wr_data[20]} = write_strobe;
 	assign {bram7_wr_data[25:24], bram6_wr_data[25:24], bram5_wr_data[25:24], bram4_wr_data[25:24], bram3_wr_data[25:24], bram2_wr_data[25:24], bram1_wr_data[25:24], bram0_wr_data[25:24]} = {8{read_address[10:9]}};
 	assign {bram7_wr_data[17:16], bram6_wr_data[17:16], bram5_wr_data[17:16], bram4_wr_data[17:16], bram3_wr_data[17:16], bram2_wr_data[17:16], bram1_wr_data[17:16], bram0_wr_data[17:16]} = {8{write_address[9:8]}};
 
@@ -84,29 +85,61 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	assign read_data = bram_rd_data[(8*read_address_delay[13:11] + 4*read_address_delay[0]) +: 4];
 
 	reg [2:0] wclk_samp, wdat_samp;
+	reg [2:0] write_state;
+	reg write_go;
 	always @(posedge clk) begin
 		if (reset) begin
-			write_strobe <= 8'b0;
-			write_address_cnt <= 13'b0;
 			write_bit <= 3'b0;
 			wclk_samp <= 3'b0;
+			write_go <= 1'b0;
 		end else begin
-			write_strobe <= 8'b0;
 			wclk_samp <= {wclk_samp[1:0], serial_clk};
 			wdat_samp <= {wdat_samp[1:0], serial_data};
+			write_go <= 1'b0;
 			if (wclk_samp[2] ^ wclk_samp[1]) begin
 				write_sr <= {write_sr[6:0], wdat_samp[2]};
 				if (write_bit == 7) begin
-					write_strobe[write_address_cnt[12:10]] <= 1'b1;
-					write_address_cnt <= write_address_cnt + 1'b1;
+					write_go <= 1'b1;
 					write_bit <= 0;
 				end else begin
 					write_bit <= write_bit + 1'b1;
 				end
 			end
 		end
-		write_address <= write_address_cnt;
-		write_strobe_reg <= write_strobe;
+	end
+
+	always @(posedge clk) begin
+		if (reset) begin
+			write_state <= 3'b000;
+			write_strobe <= 8'b0;
+			write_address <= 12'b0;
+		end else begin
+			case (write_state)
+				3'b000: begin
+					if (write_go) write_state <= 3'b001;
+					write_strobe <= 8'b0;
+				end
+				3'b001: begin
+					write_strobe[write_address[12:10]] <= 1'b1;
+					write_state <= 3'b010;
+				end
+				3'b010: begin
+					write_state <= 3'b011;
+				end
+				3'b011: begin
+					write_strobe <= 8'b0;
+					write_state <= 3'b100;
+				end
+				3'b100: begin
+					write_state <= 3'b101;
+				end
+				3'b101: begin
+					write_address <= write_address + 1'b1;
+					write_state <= 3'b000;
+				end
+				default: write_state <= 3'b000;
+			endcase
+		end
 	end
 
 	assign io_oeb = ~(30'b11000001);

@@ -156,6 +156,8 @@ def run():
     fpga_wclk = Pin('IO_20', mode=Pin.OUT, value=0)
     fpga_wdata = Pin('IO_21', mode=Pin.OUT, value=0)
 
+    time.sleep(10)
+
     for i in range(3):
         fpga_rst.value(1)
         time.sleep(0.01)
