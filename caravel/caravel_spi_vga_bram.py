@@ -95,7 +95,7 @@ def run():
 
     supply = ProgSupply()
     # set vcc to 1.8V for better fabric perf
-    voltage = 1.6
+    voltage = 1.8
     R2 = 360 / ((voltage / 1.25) - 1)
     Rpot = (1 / (1 / R2 - 1 / 5000)) - 500
     P = Rpot / 38.911
@@ -156,9 +156,9 @@ def run():
     fpga_wclk = Pin('IO_20', mode=Pin.OUT, value=0)
     fpga_wdata = Pin('IO_21', mode=Pin.OUT, value=0)
 
-    time.sleep(10)
+    time.sleep(5)
 
-    for i in range(3):
+    for i in range(5):
         fpga_rst.value(1)
         time.sleep(0.01)
         fpga_rst.value(0)
@@ -177,7 +177,7 @@ def run():
                     fpga_wclk.value(wclk)
                 idx += 1
                 print("wr {}".format(idx))
-        time.sleep(5)
+        time.sleep(2)
     # fpga_data = [Pin('IO_{}'.format(i), mode=Pin.IN) for i in range(15, 38)]
     # for i in range(1000):
     #     fpga_rst.value(1 if i < 10 else 0)

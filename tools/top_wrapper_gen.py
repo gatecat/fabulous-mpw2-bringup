@@ -4,6 +4,7 @@ def gen(f):
     max_io = 31
 
     ports = [
+        ("clk", 1),
         ("io_in", max_io),
         ("io_out", max_io),
         ("io_oeb", max_io)
@@ -25,6 +26,9 @@ def gen(f):
         print(f"wire [{w-1}:0] {p};", file=f)
     print("", file=f)
 
+    print("Global_Clock clk_i(.CLK(clk));", file=f)
+    print("", file=f)
+
     for i in range(rows):
         for j in range(2):
             idx=31-(i*2+j)
@@ -36,12 +40,12 @@ def gen(f):
     def add_outpass(x, y, bel, sig, index):
         nonlocal op_idx
         conn = ", ".join(f".I{3-j}({sig}[{index+j}])" for j in range(4))
-        print(f'(* keep, BEL="X{x}Y{y}.{bel}" *) OutPass4_frame_config op{op_idx}_i ({conn});', file=f)
+        print(f'(* keep, BEL="X{x}Y{y}.{bel}" *) OutPass4_frame_config op{op_idx}_i (.CLK(clk), {conn});', file=f)
         op_idx += 1
     def add_inpass(x, y, bel, sig, index):
         nonlocal op_idx
         conn = ", ".join(f".O{3-j}({sig}[{index+j}])" for j in range(4))
-        print(f'(* keep, BEL="X{x}Y{y}.{bel}" *) InPass4_frame_config ip{op_idx}_i ({conn});', file=f)
+        print(f'(* keep, BEL="X{x}Y{y}.{bel}" *) InPass4_frame_config ip{op_idx}_i (.CLK(clk), {conn});', file=f)
         op_idx += 1
 
     for i in range(num_bram):

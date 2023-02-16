@@ -53,7 +53,8 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	wire [13:0] read_address = {vcnt[7:1], hcnt[6:0] ^ 7'b1000000};
 
 	assign io_out[5:1] = {b, g, r, vsync, hsync};
-	assign io_out[30:6] = 0;
+	// assign io_out[30:6] = 0;
+	assign io_out[23] = write_go;
 	assign io_out[0] = 1'b0;
 
 	wire reset = io_in[0];
@@ -97,7 +98,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 			wdat_samp <= {wdat_samp[1:0], serial_data};
 			write_go <= 1'b0;
 			if (wclk_samp[2] ^ wclk_samp[1]) begin
-				write_sr <= {write_sr[6:0], wdat_samp[2]};
+				write_sr[7-write_bit] <= {write_sr[6:0], wdat_samp[2]};
 				if (write_bit == 7) begin
 					write_go <= 1'b1;
 					write_bit <= 0;
