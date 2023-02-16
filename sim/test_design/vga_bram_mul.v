@@ -23,6 +23,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	reg [9:0] vcnt;
 	reg visible;
 	reg hsync, vsync;
+	reg [3:0] hsync_pipe, vsync_pipe;
 
 	reg [6:0] frame_cnt;
 
@@ -38,8 +39,8 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 		end else begin
 			hcnt <= hcnt + 1'b1;
 		end
-		hsync <= ~((hcnt >= HFP) && (hcnt < HS));
-		vsync <= ~((vcnt >= VFP) && (vcnt < VS));
+		{hsync, hsync_pipe} <= {hsync_pipe, ~((hcnt >= HFP) && (hcnt < HS))};
+		{vsync, vsync_pipe} <= {vsync_pipe, ~((vcnt >= VFP) && (vcnt < VS))};
 		visible <= (hcnt < HVIS) && (vcnt < VVIS);
 	end 
 
@@ -61,18 +62,18 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	wire [15:0] x_scale, y_scale;
 
 	divider x_div(.clk(clk), .start(hcnt == 256), .a(255*256), .b(vcnt_next[8:2]), .q(x_scale[15:0]));
-	divider y_div(.clk(clk), .start(hcnt == 256), .a(64*256), .b(vcnt_next[8:2]), .q(y_scale[15:0]));
+	divider y_div(.clk(clk), .start(hcnt == 256), .a(63*256), .b(vcnt_next[8:2]), .q(y_scale[15:0]));
 
 	wire [15:0] x0, x1;
 	dsp_mul mulx0_i (.A({1'b0, x_adj}), .B(x_scale[7:0]), .Q(x0));
 	dsp_mul mulx1_i (.A({1'b0, x_adj}), .B(x_scale[15:8]), .Q(x1));
 
-	wire [23:0] x_out = x0 + (x1 << 8);
+	wire [22:0] x_out = x0 + (x1 << 8);
 
 	wire [15:0] y0, y1;
 	dsp_mul muly0_i (.A({1'b0, y_adj}), .B(y_scale[7:0]), .Q(y0));
 	dsp_mul muly1_i (.A({1'b0, y_adj}), .B(y_scale[15:8]), .Q(y1));
-	wire [23:0] y_out = y0 + (y1 << 8);
+	wire [22:0] y_out = y0 + (y1 << 8);
 
 	reg r, g, b;
 
@@ -82,12 +83,12 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	localparam x_shift = 16, y_shift = 16;
 
 	always @(posedge clk) begin
-		x_vis <= (x_out[23:x_shift+1] == 0) && (y_out[23:y_shift+1] == 0);
+		x_vis <= (x_out[22:x_shift+1] == 0) && (y_out[22:y_shift+1] == 0);
 		x_addr[6] <= x_sign;
 		x_addr[5:0] <= x_sign ? x_out[x_shift:x_shift-5] : (63 - x_out[x_shift:x_shift-5]);
 		y_addr[6] <= 1'b0;
 		y_addr[5:0] <= y_out[y_shift:y_shift-5] + frame_cnt;
-		if (vcnt < 442 && !hcnt[8] && x_vis)
+		if (!hcnt[8] && x_vis)
 			{r, g, b} <= read_data[2:0];
 		else
 			{r, g, b} <= 3'b000;
