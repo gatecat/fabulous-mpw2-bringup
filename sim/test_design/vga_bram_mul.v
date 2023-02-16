@@ -24,9 +24,12 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	reg visible;
 	reg hsync, vsync;
 
+	reg [6:0] frame_cnt;
+
 	always @(posedge clk) begin
 		if (hcnt >= (HT - 1)) begin
 			if (vcnt >= (VT - 1)) begin
+				frame_cnt <= frame_cnt + 1'b1;
 				vcnt <= 0;
 			end else begin
 				vcnt <= vcnt + 1'b1;
@@ -45,35 +48,47 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	reg x_sign;
 	reg [6:0] x_adj;
 	reg [6:0] y_adj;
+	reg [9:0] vcnt_next;
 
-	wire [15:0] x_out, y_out;
 
 	always @(posedge clk) begin
 		x_sign <= hcnt[7];
 		x_adj <= hcnt[7] ? hcnt[6:0] :  (127 - hcnt[6:0]);
 		y_adj <= (127 - vcnt[8:2]);
+		vcnt_next <= vcnt + 1'b1;
 	end
 
-	wire [15:0] x_scale;
-	reg [7:0] y_scale = 64;
+	wire [15:0] x_scale, y_scale;
 
-	divider x_div(.clk(clk), .start(hcnt == 256), .a(128), .b(vcnt[8:1]), .q(x_scale[15:8]), .r(x_scale[7:0]));
+	divider x_div(.clk(clk), .start(hcnt == 256), .a(255*256), .b(vcnt_next[8:2]), .q(x_scale[15:0]));
+	divider y_div(.clk(clk), .start(hcnt == 256), .a(64*256), .b(vcnt_next[8:2]), .q(y_scale[15:0]));
 
-	dsp_mul mul0_i (.A({1'b0, x_adj}), .B(x_scale[11:4]), .Q(x_out));
-	dsp_mul mul1_i (.A({1'b0, y_adj}), .B(y_scale), .Q(y_out));
+	wire [15:0] x0, x1;
+	dsp_mul mulx0_i (.A({1'b0, x_adj}), .B(x_scale[7:0]), .Q(x0));
+	dsp_mul mulx1_i (.A({1'b0, x_adj}), .B(x_scale[15:8]), .Q(x1));
+
+	wire [23:0] x_out = x0 + (x1 << 8);
+
+	wire [15:0] y0, y1;
+	dsp_mul muly0_i (.A({1'b0, y_adj}), .B(y_scale[7:0]), .Q(y0));
+	dsp_mul muly1_i (.A({1'b0, y_adj}), .B(y_scale[15:8]), .Q(y1));
+	wire [23:0] y_out = y0 + (y1 << 8);
 
 	reg r, g, b;
 
 	reg [6:0] x_addr, y_addr;
 	reg x_vis;
 
+	localparam x_shift = 16, y_shift = 16;
+
 	always @(posedge clk) begin
-		x_vis <= (x_out[15:13] == 0) && (y_out[15:14] == 0);
+		x_vis <= (x_out[23:x_shift+1] == 0) && (y_out[23:y_shift+1] == 0);
 		x_addr[6] <= x_sign;
-		x_addr[5:0] <= x_sign ? x_out[12:7] : (63 - x_out[12:7]);
-		y_addr[6:0] <= y_out[13:7];
+		x_addr[5:0] <= x_sign ? x_out[x_shift:x_shift-5] : (63 - x_out[x_shift:x_shift-5]);
+		y_addr[6] <= 1'b0;
+		y_addr[5:0] <= y_out[y_shift:y_shift-5] + frame_cnt;
 		if (vcnt < 442 && !hcnt[8] && x_vis)
-			{r, g, b} <= (x_addr[3] ^ y_addr[3]) ? 3'b001 : 3'b010;
+			{r, g, b} <= read_data[2:0];
 		else
 			{r, g, b} <= 3'b000;
 	end
@@ -93,7 +108,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	reg [7:0] write_sr;
 	reg [7:0] write_strobe;
 	reg [2:0] write_bit;
-/*
+
 	assign {bram0_rd_addr, bram1_rd_addr, bram2_rd_addr, bram3_rd_addr, bram4_rd_addr, bram5_rd_addr, bram6_rd_addr, bram7_rd_addr} = {8{read_address[8:1]}};
 	assign {bram0_wr_addr, bram1_wr_addr, bram2_wr_addr, bram3_wr_addr, bram4_wr_addr, bram5_wr_addr, bram6_wr_addr, bram7_wr_addr} = {8{write_address[7:0]}};
 
@@ -170,7 +185,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 			endcase
 		end
 	end
-*/
+
 	assign io_oeb = ~(30'b11000001);
 
 endmodule
@@ -199,30 +214,28 @@ endmodule
 
 module divider(
 	input clk, start,
-	input [7:0] a,
-	input [7:0] b,
-	output reg [7:0] q, r
+	input [15:0] a,
+	input [15:0] b,
+	output reg [15:0] q
 );
 	// based on picorv32
-	reg [7:0] quotient, dividend, quotient_msk;
-	reg [14:0] divisor;
+	reg [15:0] quotient, dividend, quotient_msk;
+	reg [30:0] divisor;
 	reg running;
 	always @(posedge clk) begin
 		if (start) begin
 			running <= 1'b1;
 			dividend <= a;
-			divisor <= b << 7;
+			divisor <= b << 14;
 			quotient <= 0;
-			quotient_msk <= (1 << 7);
+			quotient_msk <= (1 << 14);
 			if (b == 0) begin
-				q <= 8'hff;
-				r <= 8'hff;
+				q <= 16'hffff;
 				running <= 1'b0;
 			end
 		end else if (!quotient_msk && running) begin
 			running <= 1'b0;
 			q <= quotient;
-			r <= dividend;
 		end else begin
 			if (divisor <= dividend) begin
 				dividend <= dividend - divisor;
