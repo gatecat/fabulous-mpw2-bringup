@@ -68,7 +68,7 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	dsp_mul muly1_i (.A({1'b0, y_adj}), .B(y_scale[15:8]), .Q(y1));
 	wire [22:0] y_out = y0 + (y1 << 8);
 
-	reg r, g, b;
+	reg [1:0] r, g, b;
 
 	reg [6:0] x_addr;
 	reg [5:0] y_addr;
@@ -83,20 +83,25 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 		x_addr[5:0] <= x_sign ? x_out[x_shift:x_shift-5] : (63 - x_out[x_shift:x_shift-5]);
 		y_addr[5:0] <= y_out[y_shift:y_shift-5] + frame_cnt;
 		if (!hcnt[8] && x_vis)
-			{r, g, b} <= road_rdata[2:0];
+			{r, g, b} <= {road_rdata[2] & road_rdata[3], road_rdata[2], // 4bit -> 6bit
+				          road_rdata[1] & road_rdata[3], road_rdata[1],
+				          road_rdata[0] & road_rdata[3], road_rdata[0]};
 		else
-			{r, g, b} <= 3'b000;
+			{r, g, b} <= 6'b0;
 	end
 
 	wire [12:0] road_raddr = {y_addr, x_addr};
 
-	assign io_out[5:1] = {b, g, r, vsync, hsync};
+	assign io_out[5:1] = {b[1], g[1], r[1], vsync, hsync};
+
 	// assign io_out[30:6] = 0;
 	assign io_out[0] = 1'b0;
 
 	wire reset = io_in[0];
 	wire write_clock = io_in[6];
 	wire write_data  = io_in[7];
+
+	assign io_out[10:8] = {b[0], g[0], r[0]};
 
 	assign io_oeb = ~(30'b11000001);
 
