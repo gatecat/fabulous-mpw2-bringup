@@ -62,7 +62,9 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	wire [15:0] x_scale, y_scale;
 
 	divider x_div(.clk(clk), .start(hcnt == 256), .a(255*256), .b(vcnt_next[8:2]), .q(x_scale[15:0]));
-	divider y_div(.clk(clk), .start(hcnt == 256), .a(63*256), .b(vcnt_next[8:2]), .q(y_scale[15:0]));
+    divider y_div(.clk(clk), .start(hcnt == 256), .a(63*256), .b(vcnt_next[8:2]), .q(y_scale[15:0]));
+
+	// assign y_scale = x_scale / 4;
 
 	wire [15:0] x0, x1;
 	dsp_mul mulx0_i (.A({1'b0, x_adj}), .B(x_scale[7:0]), .Q(x0));
