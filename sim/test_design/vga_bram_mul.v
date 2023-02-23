@@ -1,14 +1,6 @@
-module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, io_oeb,
-	output wire [7:0] bram0_rd_addr, bram0_wr_addr, output wire [31:0] bram0_wr_data, input wire [31:0] bram0_rd_data, output wire [7:0] bram0_config,
-	output wire [7:0] bram1_rd_addr, bram1_wr_addr, output wire [31:0] bram1_wr_data, input wire [31:0] bram1_rd_data, output wire [7:0] bram1_config,
-	output wire [7:0] bram2_rd_addr, bram2_wr_addr, output wire [31:0] bram2_wr_data, input wire [31:0] bram2_rd_data, output wire [7:0] bram2_config,
-	output wire [7:0] bram3_rd_addr, bram3_wr_addr, output wire [31:0] bram3_wr_data, input wire [31:0] bram3_rd_data, output wire [7:0] bram3_config,
-	output wire [7:0] bram4_rd_addr, bram4_wr_addr, output wire [31:0] bram4_wr_data, input wire [31:0] bram4_rd_data, output wire [7:0] bram4_config,
-	output wire [7:0] bram5_rd_addr, bram5_wr_addr, output wire [31:0] bram5_wr_data, input wire [31:0] bram5_rd_data, output wire [7:0] bram5_config,
-	output wire [7:0] bram6_rd_addr, bram6_wr_addr, output wire [31:0] bram6_wr_data, input wire [31:0] bram6_rd_data, output wire [7:0] bram6_config,
-	output wire [7:0] bram7_rd_addr, bram7_wr_addr, output wire [31:0] bram7_wr_data, input wire [31:0] bram7_rd_data, output wire [7:0] bram7_config
-);
+module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, io_oeb);
 	// running at 10MHz: divide horizontal timings by 2.5
+	// Video timing generation
 	localparam HVIS = 256;
 	localparam HFP = HVIS+6;
 	localparam HS = HFP+39;
@@ -44,13 +36,13 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 		visible <= (hcnt < HVIS) && (vcnt < VVIS);
 	end 
 
-	wire [3:0] read_data;
+	// Perspective transformation
+	wire [3:0] road_rdata;
 
 	reg x_sign;
 	reg [6:0] x_adj;
 	reg [6:0] y_adj;
 	reg [9:0] vcnt_next;
-
 
 	always @(posedge clk) begin
 		x_sign <= hcnt[7];
@@ -62,9 +54,8 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 	wire [15:0] x_scale, y_scale;
 
 	divider x_div(.clk(clk), .start(hcnt == 256), .a(255*256), .b(vcnt_next[8:2]), .q(x_scale[15:0]));
-    divider y_div(.clk(clk), .start(hcnt == 256), .a(63*256), .b(vcnt_next[8:2]), .q(y_scale[15:0]));
 
-	// assign y_scale = x_scale / 4;
+	assign y_scale = x_scale / 4;
 
 	wire [15:0] x0, x1;
 	dsp_mul mulx0_i (.A({1'b0, x_adj}), .B(x_scale[7:0]), .Q(x0));
@@ -79,117 +70,45 @@ module top(input wire clk, input wire [30:0] io_in, output wire [30:0] io_out, i
 
 	reg r, g, b;
 
-	reg [6:0] x_addr, y_addr;
+	reg [6:0] x_addr;
+	reg [5:0] y_addr;
 	reg x_vis;
 
 	localparam x_shift = 16, y_shift = 16;
 
+	// Output generation
 	always @(posedge clk) begin
 		x_vis <= (x_out[22:x_shift+1] == 0) && (y_out[22:y_shift+1] == 0);
 		x_addr[6] <= x_sign;
 		x_addr[5:0] <= x_sign ? x_out[x_shift:x_shift-5] : (63 - x_out[x_shift:x_shift-5]);
-		y_addr[6] <= 1'b0;
 		y_addr[5:0] <= y_out[y_shift:y_shift-5] + frame_cnt;
 		if (!hcnt[8] && x_vis)
-			{r, g, b} <= read_data[2:0];
+			{r, g, b} <= road_rdata[2:0];
 		else
 			{r, g, b} <= 3'b000;
 	end
 
-	wire [13:0] read_address = {y_addr, x_addr};
+	wire [12:0] road_raddr = {y_addr, x_addr};
 
 	assign io_out[5:1] = {b, g, r, vsync, hsync};
 	// assign io_out[30:6] = 0;
-	assign io_out[23] = write_go;
 	assign io_out[0] = 1'b0;
 
 	wire reset = io_in[0];
-	wire serial_clk = io_in[6];
-	wire serial_data = io_in[7];
-
-	reg [12:0] write_address;
-	reg [7:0] write_sr;
-	reg [7:0] write_strobe;
-	reg [2:0] write_bit;
-
-	assign {bram0_rd_addr, bram1_rd_addr, bram2_rd_addr, bram3_rd_addr, bram4_rd_addr, bram5_rd_addr, bram6_rd_addr, bram7_rd_addr} = {8{read_address[8:1]}};
-	assign {bram0_wr_addr, bram1_wr_addr, bram2_wr_addr, bram3_wr_addr, bram4_wr_addr, bram5_wr_addr, bram6_wr_addr, bram7_wr_addr} = {8{write_address[7:0]}};
-
-	assign {bram0_wr_data[7:0], bram1_wr_data[7:0], bram2_wr_data[7:0], bram3_wr_data[7:0], bram4_wr_data[7:0], bram5_wr_data[7:0], bram6_wr_data[7:0], bram7_wr_data[7:0]} = {8{write_sr[7:0]}};
-
-	assign {bram4_wr_data[20], bram7_wr_data[20], bram6_wr_data[20], bram5_wr_data[20], bram3_wr_data[20], bram2_wr_data[20], bram1_wr_data[20], bram0_wr_data[20]} = write_strobe;
-	assign {bram7_wr_data[25:24], bram6_wr_data[25:24], bram5_wr_data[25:24], bram4_wr_data[25:24], bram3_wr_data[25:24], bram2_wr_data[25:24], bram1_wr_data[25:24], bram0_wr_data[25:24]} = {8{read_address[10:9]}};
-	assign {bram7_wr_data[17:16], bram6_wr_data[17:16], bram5_wr_data[17:16], bram4_wr_data[17:16], bram3_wr_data[17:16], bram2_wr_data[17:16], bram1_wr_data[17:16], bram0_wr_data[17:16]} = {8{write_address[9:8]}};
-
-	assign {bram0_config, bram1_config, bram2_config, bram3_config, bram4_config, bram5_config, bram6_config, bram7_config} = {8{8'b00100101}};
-
-
-	wire [63:0] bram_rd_data = {bram4_rd_data[7:0], bram7_rd_data[7:0], bram6_rd_data[7:0], bram5_rd_data[7:0], bram3_rd_data[7:0], bram2_rd_data[7:0], bram1_rd_data[7:0], bram0_rd_data[7:0]};
-	reg [13:0] read_address_delay;
-	always @(posedge clk)
-		read_address_delay <= read_address;
-
-	assign read_data = bram_rd_data[(8*read_address_delay[13:11] + 4*read_address_delay[0]) +: 4];
-
-	reg [2:0] wclk_samp, wdat_samp;
-	reg [2:0] write_state;
-	reg write_go;
-	always @(posedge clk) begin
-		if (reset) begin
-			write_bit <= 3'b0;
-			wclk_samp <= 3'b0;
-			write_go <= 1'b0;
-		end else begin
-			wclk_samp <= {wclk_samp[1:0], serial_clk};
-			wdat_samp <= {wdat_samp[1:0], serial_data};
-			write_go <= 1'b0;
-			if (wclk_samp[2] ^ wclk_samp[1]) begin
-				write_sr[7-write_bit] <= {write_sr[6:0], wdat_samp[2]};
-				if (write_bit == 7) begin
-					write_go <= 1'b1;
-					write_bit <= 0;
-				end else begin
-					write_bit <= write_bit + 1'b1;
-				end
-			end
-		end
-	end
-
-	always @(posedge clk) begin
-		if (reset) begin
-			write_state <= 3'b000;
-			write_strobe <= 8'b0;
-			write_address <= 12'b0;
-		end else begin
-			case (write_state)
-				3'b000: begin
-					if (write_go) write_state <= 3'b001;
-					write_strobe <= 8'b0;
-				end
-				3'b001: begin
-					write_strobe[write_address[12:10]] <= 1'b1;
-					write_state <= 3'b010;
-				end
-				3'b010: begin
-					write_state <= 3'b011;
-				end
-				3'b011: begin
-					write_strobe <= 8'b0;
-					write_state <= 3'b100;
-				end
-				3'b100: begin
-					write_state <= 3'b101;
-				end
-				3'b101: begin
-					write_address <= write_address + 1'b1;
-					write_state <= 3'b000;
-				end
-				default: write_state <= 3'b000;
-			endcase
-		end
-	end
+	wire write_clock = io_in[6];
+	wire write_data  = io_in[7];
 
 	assign io_oeb = ~(30'b11000001);
+
+	// Video memory
+
+	texture_mem mem_i (
+		.clk(clk),
+		.write_rst(reset), .write_clock(write_clock), .write_data(write_data),
+		.bank0_raddr(road_raddr),
+		.bank0_rdata(road_rdata),
+		.bank1_raddr()
+	);
 
 endmodule
 
@@ -248,4 +167,143 @@ module divider(
 			quotient_msk <= quotient_msk >> 1;
 		end
 	end
+endmodule
+
+module texture_mem (
+	input clk,
+	input write_rst, write_data, write_clock,
+	input [12:0] bank0_raddr,
+	output [3:0] bank0_rdata,
+	input [12:0] bank1_raddr,
+	output [3:0] bank1_rdata,
+);
+	reg [12:0] write_address;
+	reg [7:0] write_sr;
+	reg [7:0] write_strobe;
+	reg [2:0] write_bit;
+
+	reg [12:0] raddr0_delay, raddr1_delay;
+	always @(posedge clk) begin
+		raddr0_delay <= bank0_raddr;
+		raddr1_delay <= bank1_raddr;
+	end
+
+	wire [63:0] bram_rdata;
+	assign bank0_rdata = bram_rdata[(8*raddr0_delay[12:11] + 4*raddr0_delay[0]) +: 4];
+	assign bank1_rdata = bram_rdata[(32 + 8*raddr1_delay[12:11] + 4*raddr1_delay[0]) +: 4];
+
+	reg [2:0] wclk_samp, wdat_samp;
+	reg [2:0] write_state;
+	reg write_go;
+
+	always @(posedge clk) begin
+		if (write_rst) begin
+			write_bit <= 3'b0;
+			wclk_samp <= 3'b0;
+			write_go <= 1'b0;
+		end else begin
+			wclk_samp <= {wclk_samp[1:0], write_clock};
+			wdat_samp <= {wdat_samp[1:0], write_data};
+			write_go <= 1'b0;
+			if (wclk_samp[2] ^ wclk_samp[1]) begin
+				write_sr[7-write_bit] <= {write_sr[6:0], wdat_samp[2]};
+				if (write_bit == 7) begin
+					write_go <= 1'b1;
+					write_bit <= 0;
+				end else begin
+					write_bit <= write_bit + 1'b1;
+				end
+			end
+		end
+	end
+
+	always @(posedge clk) begin
+		if (write_rst) begin
+			write_state <= 3'b000;
+			write_strobe <= 8'b0;
+			write_address <= 12'b0;
+		end else begin
+			case (write_state)
+				3'b000: begin
+					if (write_go) write_state <= 3'b001;
+					write_strobe <= 8'b0;
+				end
+				3'b001: begin
+					write_strobe[write_address[12:10]] <= 1'b1;
+					write_state <= 3'b010;
+				end
+				3'b010: begin
+					write_state <= 3'b011;
+				end
+				3'b011: begin
+					write_strobe <= 8'b0;
+					write_state <= 3'b100;
+				end
+				3'b100: begin
+					write_state <= 3'b101;
+				end
+				3'b101: begin
+					write_address <= write_address + 1'b1;
+					write_state <= 3'b000;
+				end
+				default: write_state <= 3'b000;
+			endcase
+		end
+	end
+
+	generate
+	genvar i;
+	for (i = 0; i < 8; i=i+1'b1) begin: ram_array
+		wire [31:0] rdata;
+		bram #(.LOC(i)) bram_i (
+			.clk(clk),
+			.waddr(write_address[7:0]), .raddr((i >= 4) ? bank1_raddr[8:1] : bank0_raddr[8:1]),
+			.cfg(8'b00100101),
+			.wdata({6'b0, ((i >= 4) ? bank1_raddr[10:9] : bank0_raddr[10:9]),
+				         3'b0, write_strobe[i], 2'b0, write_address[9:8], 8'b0, write_sr}),
+			.rdata(rdata)
+		);
+		assign bram_rdata[8*i+:8] = rdata[7:0];
+	end
+	endgenerate
+
+endmodule
+
+module bram	#(
+		parameter LOC = 0,
+		localparam DEV_HEIGHT = 16,
+		localparam BRAM_X = 10,
+	) (
+		input clk,
+		input [7:0] waddr, raddr, cfg,
+		input [31:0] wdata,
+		output [31:0] rdata
+	);
+
+	localparam x = BRAM_X;
+	localparam y0 = (DEV_HEIGHT - 2*LOC);
+
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_A1", x, y0) *) OutPass4_frame_config op0_i (.CLK(clk), .I3(raddr[0]), .I2(raddr[1]), .I1(raddr[2]), .I0(raddr[3]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_A0", x, y0) *) OutPass4_frame_config op1_i (.CLK(clk), .I3(raddr[4]), .I2(raddr[5]), .I1(raddr[6]), .I0(raddr[7]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_A1", x, y0-1) *) OutPass4_frame_config op2_i (.CLK(clk), .I3(waddr[0]), .I2(waddr[1]), .I1(waddr[2]), .I0(waddr[3]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_A0", x, y0-1) *) OutPass4_frame_config op3_i (.CLK(clk), .I3(waddr[4]), .I2(waddr[5]), .I1(waddr[6]), .I0(waddr[7]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D3", x, y0) *) OutPass4_frame_config op4_i (.CLK(clk), .I3(wdata[0]), .I2(wdata[1]), .I1(wdata[2]), .I0(wdata[3]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D3", x, y0) *) InPass4_frame_config ip5_i (.CLK(clk), .O3(rdata[0]), .O2(rdata[1]), .O1(rdata[2]), .O0(rdata[3]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D2", x, y0) *) OutPass4_frame_config op6_i (.CLK(clk), .I3(wdata[4]), .I2(wdata[5]), .I1(wdata[6]), .I0(wdata[7]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D2", x, y0) *) InPass4_frame_config ip7_i (.CLK(clk), .O3(rdata[4]), .O2(rdata[5]), .O1(rdata[6]), .O0(rdata[7]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D1", x, y0) *) OutPass4_frame_config op8_i (.CLK(clk), .I3(wdata[8]), .I2(wdata[9]), .I1(wdata[10]), .I0(wdata[11]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D1", x, y0) *) InPass4_frame_config ip9_i (.CLK(clk), .O3(rdata[8]), .O2(rdata[9]), .O1(rdata[10]), .O0(rdata[11]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D0", x, y0) *) OutPass4_frame_config op10_i (.CLK(clk), .I3(wdata[12]), .I2(wdata[13]), .I1(wdata[14]), .I0(wdata[15]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D0", x, y0) *) InPass4_frame_config ip11_i (.CLK(clk), .O3(rdata[12]), .O2(rdata[13]), .O1(rdata[14]), .O0(rdata[15]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D3", x, y0-1) *) OutPass4_frame_config op12_i (.CLK(clk), .I3(wdata[16]), .I2(wdata[17]), .I1(wdata[18]), .I0(wdata[19]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D3", x, y0-1) *) InPass4_frame_config ip13_i (.CLK(clk), .O3(rdata[16]), .O2(rdata[17]), .O1(rdata[18]), .O0(rdata[19]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D2", x, y0-1) *) OutPass4_frame_config op14_i (.CLK(clk), .I3(wdata[20]), .I2(wdata[21]), .I1(wdata[22]), .I0(wdata[23]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D2", x, y0-1) *) InPass4_frame_config ip15_i (.CLK(clk), .O3(rdata[20]), .O2(rdata[21]), .O1(rdata[22]), .O0(rdata[23]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D1", x, y0-1) *) OutPass4_frame_config op16_i (.CLK(clk), .I3(wdata[24]), .I2(wdata[25]), .I1(wdata[26]), .I0(wdata[27]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D1", x, y0-1) *) InPass4_frame_config ip17_i (.CLK(clk), .O3(rdata[24]), .O2(rdata[25]), .O1(rdata[26]), .O0(rdata[27]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_D0", x, y0-1) *) OutPass4_frame_config op18_i (.CLK(clk), .I3(wdata[28]), .I2(wdata[29]), .I1(wdata[30]), .I0(wdata[31]));
+(* keep, BEL=$sformatf("X%dY%d.RAM2FAB_D0", x, y0-1) *) InPass4_frame_config ip19_i (.CLK(clk), .O3(rdata[28]), .O2(rdata[29]), .O1(rdata[30]), .O0(rdata[31]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_C", x, y0) *) OutPass4_frame_config op20_i (.CLK(clk), .I3(cfg[0]), .I2(cfg[1]), .I1(cfg[2]), .I0(cfg[3]));
+(* keep, BEL=$sformatf("X%dY%d.FAB2RAM_C", x, y0-1) *) OutPass4_frame_config op21_i (.CLK(clk), .I3(cfg[4]), .I2(cfg[5]), .I1(cfg[6]), .I0(cfg[7]));
+
 endmodule
