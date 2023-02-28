@@ -260,7 +260,7 @@ module texture_mem (
 	genvar i;
 	for (i = 0; i < 8; i=i+1'b1) begin: ram_array
 		wire [31:0] rdata;
-		bram #(.LOC(i), .IN_REG(1'b0), .OUT_REG(1'b0)) bram_i (
+		bram #(.LOC(i), .IN_REG(1'b1), .OUT_REG(1'b1)) bram_i (
 			.clk(clk),
 			.waddr(write_address[7:0]), .raddr((i >= 4) ? bank1_raddr[8:1] : bank0_raddr[8:1]),
 			.cfg(8'b00100101),

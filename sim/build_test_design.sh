@@ -7,7 +7,7 @@ BIT_GEN=${HOME}/FABulous/fabric_cad/bit_gen.py
 DESIGN=${DESIGN:-counter}
 
 set -ex
-yosys -qp "synth_fabulous -carry ha -top top_wrapper -json test_design/${DESIGN}.json" test_design/${DESIGN}.v test_design/top_wrapper.v
+yosys -qp "synth_fabulous -complex-dff -carry ha -top top_wrapper -json test_design/${DESIGN}.json" test_design/${DESIGN}.v test_design/top_wrapper.v
 
-FAB_ROOT=../fabric nextpnr-generic --seed 3 --uarch fabulous --json test_design/${DESIGN}.json -o fasm=test_design/${DESIGN}_des.fasm
+FAB_ROOT=../fabric nextpnr-generic --seed 1000 --timing-allow-fail --uarch fabulous --json test_design/${DESIGN}.json -o fasm=test_design/${DESIGN}_des.fasm
 python3 ${BIT_GEN} -genBitstream test_design/${DESIGN}_des.fasm ../fabric/npnroutput/meta_data.txt test_design/${DESIGN}.bin

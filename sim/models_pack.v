@@ -52,6 +52,8 @@ module LHQD1_old (D, E, Q);
 endmodule */
 
 module LHQD1 (input D, E, output reg Q, QN);
+	initial Q = 1'b0;
+	initial QN = 1'b1;
     always @(*)
     begin
         if (E == 1'b1) begin
@@ -476,4 +478,8 @@ module cus_mux161_buf (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A1
 	.S1N(S3N),
 	.X  (X)
 	);
+endmodule
+
+module clk_buf(input A, output X);
+assign X = A;
 endmodule

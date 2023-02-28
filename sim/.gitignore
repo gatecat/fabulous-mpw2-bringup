@@ -8,3 +8,7 @@ test_design/*.vh
 test_design/*.vhd
 *.hex
 *.fst
+*.rtl.cc
+*.rtl.h
+*.o
+cxxrtl_tb

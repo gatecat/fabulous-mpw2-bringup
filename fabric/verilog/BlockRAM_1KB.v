@@ -121,8 +121,7 @@ endmodule
 // Words: 256
 // Word size: 32
 // Write size: 8
-
-(* blackbox *) module sram_1rw1r_32_256_8_sky130(
+module sram_1rw1r_32_256_8_sky130(
 // Port 0: RW
     clk0,csb0,web0,wmask0,addr0,din0,dout0,
 // Port 1: R

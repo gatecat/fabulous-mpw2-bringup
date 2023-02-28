@@ -105,7 +105,3 @@ module fab_tb;
 
 endmodule
 
-module clk_buf(input A, output X);
-assign X = A;
-endmodule
-
