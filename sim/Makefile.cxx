@@ -1,7 +1,7 @@
 all: cxxrtl_tb
 
 fabric.rtl.cc:
-	yosys -p "read_verilog models_pack.v ../fabric/verilog/*.v; hierarchy -top eFPGA_top; write_cxxrtl -header -noflatten -g0 fabric.rtl.cc"
+	yosys -D EMULATION -p "read_verilog test_design/vga.vh ../fabric/verilog_emulation/*.v models_pack.v; script yosys_build_emul.ys"
 
 fabric.rtl.h: fabric.rtl.cc
 
@@ -13,3 +13,8 @@ fabric.rtl.h: fabric.rtl.cc
 
 cxxrtl_tb: fabric.rtl.o cxxrtl_tb.o
 	clang++ -std=c++17 -lSDL2 -o $@ $^
+
+clean:
+	rm -f fabric.rtl.cc fabric.rtl.h fabric.rtl.o cxxrtl_tb.o cxxrtl_tb
+
+.PHONY: clean

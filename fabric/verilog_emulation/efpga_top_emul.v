@@ -188,7 +188,7 @@ module eFPGA_top (
 	assign io_oeb[6:0] = 7'b0111111;
 
 
-	assign CLK = clk_sel[0] ? (clk_sel[1] ? user_clock2 : wb_clk_i) : external_clock;
+	assign CLK = external_clock;
 
 	assign la_data_out[6:0] = {A_config_C[39], A_config_C[31], A_config_C[16], FAB2RAM_C[45], ReceiveLED, Rx, ComActive};
 

@@ -10,3 +10,4 @@ flatten
 opt -fast -mux_bool -mux_undef
 opt_clean -purge
 write_ilang opt.il
+write_cxxrtl -g0 -header fabric.rtl.cc
