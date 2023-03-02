@@ -1,7 +1,7 @@
 all: cxxrtl_tb
 
 fabric.rtl.cc:
-	yosys -D EMULATION -p "read_verilog test_design/vga.vh ../fabric/verilog_emulation/*.v models_pack.v; script yosys_build_emul.ys"
+	yosys -D EMULATION -p "read_verilog test_design/vga_bram_mul.vh ../fabric/verilog_emulation/*.v models_pack.v; script yosys_build_emul.ys"
 
 fabric.rtl.h: fabric.rtl.cc
 

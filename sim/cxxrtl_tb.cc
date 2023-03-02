@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <chrono>
+#include <iostream>
+#include <fstream>
+#include <iterator>
+
 #include <SDL2/SDL.h>
 #include "fabric.rtl.h"
 
@@ -90,6 +94,32 @@ int main(int argc, char *argv[]) {
         update_io(top, io);
     };
 
+    // image load for fancier demo
+    if (argc >= 2) {
+        std::vector<char> img_data;
+        std::ifstream file(argv[1], std::ios::binary);
+        if (!file) {
+            fprintf(stderr, "failed to open %s!\n", argv[1]);
+            return 1;
+        }
+        std::istreambuf_iterator<char> start(file), end{};
+        std::copy(start, end, std::back_inserter(img_data));
+
+        io.fab_reset = 1;
+        for (int i = 0; i < 100; i++) tick();
+        io.fab_reset = 0;
+        fprintf(stderr, "loading %u image bytes!\n", unsigned(img_data.size()));
+        for (char byte : img_data) {
+            for (int i = 0; i < 8; i++) {
+                io.write_data = (uint8_t(byte) >> (7 - i)) & 0x1;
+                for (int j = 0; j < 20; j++) tick();
+                io.write_strobe = !io.write_strobe;
+                for (int j = 0; j < 20; j++) tick();
+            }
+        }
+        fprintf(stderr, "done loading!\n");
+    }
+
     vga_window = SDL_CreateWindow("vga", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, htotal*hscale, vtotal, 0);
     if (vga_window == nullptr) {
         fprintf(stderr, "Failed to create window: %s.\n", SDL_GetError());
@@ -97,8 +127,6 @@ int main(int argc, char *argv[]) {
     }
     vga_renderer =
       SDL_CreateRenderer(vga_window, -1, SDL_RENDERER_ACCELERATED);
-
-    // TODO: image load for fancier demo
 
     // main loop
     bool last_hsync = true, last_vsync = true;
