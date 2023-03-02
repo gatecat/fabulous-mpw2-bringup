@@ -3,7 +3,7 @@ import sys, re
 
 with open(sys.argv[1], "r") as fi, open(sys.argv[2], "w") as fo:
     for line in fi:
-        if m := re.match(r'\s+([A-Z0-9_]+) Tile_X(\d+)Y(\d+)_([A-Z0-9a-z_]+) \(\s*', line):
+        if m := re.match(r'\s+([A-Za-z0-9_]+) Tile_X(\d+)Y(\d+)_([A-Za-z0-9a-z_]+) \(\s*', line):
             # tile instance
             tt = m.group(1)
             tx = int(m.group(2))

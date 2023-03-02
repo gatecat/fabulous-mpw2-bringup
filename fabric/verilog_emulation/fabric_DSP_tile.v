@@ -5038,7 +5038,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 
 //tile instantiations
 
-	N_term_single Tile_X1Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X1Y0_Emulate_Bitstream))
+`endif
+	Tile_X1Y0_N_term_single (
 	.N1END(Tile_X1Y1_N1BEG[3:0]),
 	.N2MID(Tile_X1Y1_N2BEG[7:0]),
 	.N2END(Tile_X1Y1_N2BEGb[7:0]),
@@ -5056,7 +5060,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X1Y0_FrameStrobe_O)
 	);
 
-	N_term_single Tile_X2Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X2Y0_Emulate_Bitstream))
+`endif
+	Tile_X2Y0_N_term_single (
 	.N1END(Tile_X2Y1_N1BEG[3:0]),
 	.N2MID(Tile_X2Y1_N2BEG[7:0]),
 	.N2END(Tile_X2Y1_N2BEGb[7:0]),
@@ -5074,7 +5082,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y0_FrameStrobe_O)
 	);
 
-	N_term_single2 Tile_X3Y0_N_term_single2 (
+	N_term_single2 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y0_Emulate_Bitstream))
+`endif
+	Tile_X3Y0_N_term_single2 (
 	.N1END(Tile_X3Y1_N1BEG[3:0]),
 	.N2MID(Tile_X3Y1_N2BEG[7:0]),
 	.N2END(Tile_X3Y1_N2BEGb[7:0]),
@@ -5091,7 +5103,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X3Y0_FrameStrobe_O)
 	);
 
-	N_term_single Tile_X4Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X4Y0_Emulate_Bitstream))
+`endif
+	Tile_X4Y0_N_term_single (
 	.N1END(Tile_X4Y1_N1BEG[3:0]),
 	.N2MID(Tile_X4Y1_N2BEG[7:0]),
 	.N2END(Tile_X4Y1_N2BEGb[7:0]),
@@ -5109,7 +5125,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X4Y0_FrameStrobe_O)
 	);
 
-	N_term_single Tile_X5Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X5Y0_Emulate_Bitstream))
+`endif
+	Tile_X5Y0_N_term_single (
 	.N1END(Tile_X5Y1_N1BEG[3:0]),
 	.N2MID(Tile_X5Y1_N2BEG[7:0]),
 	.N2END(Tile_X5Y1_N2BEGb[7:0]),
@@ -5127,7 +5147,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X5Y0_FrameStrobe_O)
 	);
 
-	N_term_single Tile_X6Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X6Y0_Emulate_Bitstream))
+`endif
+	Tile_X6Y0_N_term_single (
 	.N1END(Tile_X6Y1_N1BEG[3:0]),
 	.N2MID(Tile_X6Y1_N2BEG[7:0]),
 	.N2END(Tile_X6Y1_N2BEGb[7:0]),
@@ -5145,7 +5169,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X6Y0_FrameStrobe_O)
 	);
 
-	N_term_DSP Tile_X7Y0_N_term_DSP (
+	N_term_DSP 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X7Y0_Emulate_Bitstream))
+`endif
+	Tile_X7Y0_N_term_DSP (
 	.N1END(Tile_X7Y1_N1BEG[3:0]),
 	.N2MID(Tile_X7Y1_N2BEG[7:0]),
 	.N2END(Tile_X7Y1_N2BEGb[7:0]),
@@ -5162,7 +5190,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X7Y0_FrameStrobe_O)
 	);
 
-	N_term_single Tile_X8Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X8Y0_Emulate_Bitstream))
+`endif
+	Tile_X8Y0_N_term_single (
 	.N1END(Tile_X8Y1_N1BEG[3:0]),
 	.N2MID(Tile_X8Y1_N2BEG[7:0]),
 	.N2END(Tile_X8Y1_N2BEGb[7:0]),
@@ -5180,7 +5212,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X8Y0_FrameStrobe_O)
 	);
 
-	N_term_single Tile_X9Y0_N_term_single (
+	N_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X9Y0_Emulate_Bitstream))
+`endif
+	Tile_X9Y0_N_term_single (
 	.N1END(Tile_X9Y1_N1BEG[3:0]),
 	.N2MID(Tile_X9Y1_N2BEG[7:0]),
 	.N2END(Tile_X9Y1_N2BEGb[7:0]),
@@ -5198,7 +5234,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X9Y0_FrameStrobe_O)
 	);
 
-	N_term_RAM_IO Tile_X10Y0_N_term_RAM_IO (
+	N_term_RAM_IO 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X10Y0_Emulate_Bitstream))
+`endif
+	Tile_X10Y0_N_term_RAM_IO (
 	.N1END(Tile_X10Y1_N1BEG[3:0]),
 	.N2MID(Tile_X10Y1_N2BEG[7:0]),
 	.N2END(Tile_X10Y1_N2BEGb[7:0]),
@@ -5363,7 +5403,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y1_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y1_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y1_Emulate_Bitstream))
+`endif
+	Tile_X3Y1_RegFile (
 	.N1END(Tile_X3Y2_N1BEG[3:0]),
 	.N2MID(Tile_X3Y2_N2BEG[7:0]),
 	.N2END(Tile_X3Y2_N2BEGb[7:0]),
@@ -5932,7 +5976,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y2_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y2_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y2_Emulate_Bitstream))
+`endif
+	Tile_X3Y2_RegFile (
 	.N1END(Tile_X3Y3_N1BEG[3:0]),
 	.N2MID(Tile_X3Y3_N2BEG[7:0]),
 	.N2END(Tile_X3Y3_N2BEGb[7:0]),
@@ -6501,7 +6549,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y3_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y3_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y3_Emulate_Bitstream))
+`endif
+	Tile_X3Y3_RegFile (
 	.N1END(Tile_X3Y4_N1BEG[3:0]),
 	.N2MID(Tile_X3Y4_N2BEG[7:0]),
 	.N2END(Tile_X3Y4_N2BEGb[7:0]),
@@ -7070,7 +7122,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y4_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y4_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y4_Emulate_Bitstream))
+`endif
+	Tile_X3Y4_RegFile (
 	.N1END(Tile_X3Y5_N1BEG[3:0]),
 	.N2MID(Tile_X3Y5_N2BEG[7:0]),
 	.N2END(Tile_X3Y5_N2BEGb[7:0]),
@@ -7639,7 +7695,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y5_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y5_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y5_Emulate_Bitstream))
+`endif
+	Tile_X3Y5_RegFile (
 	.N1END(Tile_X3Y6_N1BEG[3:0]),
 	.N2MID(Tile_X3Y6_N2BEG[7:0]),
 	.N2END(Tile_X3Y6_N2BEGb[7:0]),
@@ -8208,7 +8268,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y6_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y6_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y6_Emulate_Bitstream))
+`endif
+	Tile_X3Y6_RegFile (
 	.N1END(Tile_X3Y7_N1BEG[3:0]),
 	.N2MID(Tile_X3Y7_N2BEG[7:0]),
 	.N2END(Tile_X3Y7_N2BEGb[7:0]),
@@ -8777,7 +8841,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y7_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y7_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y7_Emulate_Bitstream))
+`endif
+	Tile_X3Y7_RegFile (
 	.N1END(Tile_X3Y8_N1BEG[3:0]),
 	.N2MID(Tile_X3Y8_N2BEG[7:0]),
 	.N2END(Tile_X3Y8_N2BEGb[7:0]),
@@ -9346,7 +9414,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y8_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y8_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y8_Emulate_Bitstream))
+`endif
+	Tile_X3Y8_RegFile (
 	.N1END(Tile_X3Y9_N1BEG[3:0]),
 	.N2MID(Tile_X3Y9_N2BEG[7:0]),
 	.N2END(Tile_X3Y9_N2BEGb[7:0]),
@@ -9915,7 +9987,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y9_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y9_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y9_Emulate_Bitstream))
+`endif
+	Tile_X3Y9_RegFile (
 	.N1END(Tile_X3Y10_N1BEG[3:0]),
 	.N2MID(Tile_X3Y10_N2BEG[7:0]),
 	.N2END(Tile_X3Y10_N2BEGb[7:0]),
@@ -10484,7 +10560,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y10_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y10_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y10_Emulate_Bitstream))
+`endif
+	Tile_X3Y10_RegFile (
 	.N1END(Tile_X3Y11_N1BEG[3:0]),
 	.N2MID(Tile_X3Y11_N2BEG[7:0]),
 	.N2END(Tile_X3Y11_N2BEGb[7:0]),
@@ -11053,7 +11133,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y11_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y11_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y11_Emulate_Bitstream))
+`endif
+	Tile_X3Y11_RegFile (
 	.N1END(Tile_X3Y12_N1BEG[3:0]),
 	.N2MID(Tile_X3Y12_N2BEG[7:0]),
 	.N2END(Tile_X3Y12_N2BEGb[7:0]),
@@ -11622,7 +11706,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y12_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y12_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y12_Emulate_Bitstream))
+`endif
+	Tile_X3Y12_RegFile (
 	.N1END(Tile_X3Y13_N1BEG[3:0]),
 	.N2MID(Tile_X3Y13_N2BEG[7:0]),
 	.N2END(Tile_X3Y13_N2BEGb[7:0]),
@@ -12191,7 +12279,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y13_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y13_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y13_Emulate_Bitstream))
+`endif
+	Tile_X3Y13_RegFile (
 	.N1END(Tile_X3Y14_N1BEG[3:0]),
 	.N2MID(Tile_X3Y14_N2BEG[7:0]),
 	.N2END(Tile_X3Y14_N2BEGb[7:0]),
@@ -12760,7 +12852,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y14_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y14_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y14_Emulate_Bitstream))
+`endif
+	Tile_X3Y14_RegFile (
 	.N1END(Tile_X3Y15_N1BEG[3:0]),
 	.N2MID(Tile_X3Y15_N2BEG[7:0]),
 	.N2END(Tile_X3Y15_N2BEGb[7:0]),
@@ -13329,7 +13425,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y15_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y15_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y15_Emulate_Bitstream))
+`endif
+	Tile_X3Y15_RegFile (
 	.N1END(Tile_X3Y16_N1BEG[3:0]),
 	.N2MID(Tile_X3Y16_N2BEG[7:0]),
 	.N2END(Tile_X3Y16_N2BEGb[7:0]),
@@ -13898,7 +13998,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y16_FrameStrobe_O)
 	);
 
-	RegFile Tile_X3Y16_RegFile (
+	RegFile 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y16_Emulate_Bitstream))
+`endif
+	Tile_X3Y16_RegFile (
 	.N1END(Tile_X3Y17_N1BEG[3:0]),
 	.N2MID(Tile_X3Y17_N2BEG[7:0]),
 	.N2END(Tile_X3Y17_N2BEGb[7:0]),
@@ -14317,7 +14421,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X10Y16_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X1Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X1Y17_Emulate_Bitstream))
+`endif
+	Tile_X1Y17_S_term_single (
 	.S1END(Tile_X1Y16_S1BEG[3:0]),
 	.S2MID(Tile_X1Y16_S2BEG[7:0]),
 	.S2END(Tile_X1Y16_S2BEGb[7:0]),
@@ -14335,7 +14443,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X1Y17_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X2Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X2Y17_Emulate_Bitstream))
+`endif
+	Tile_X2Y17_S_term_single (
 	.S1END(Tile_X2Y16_S1BEG[3:0]),
 	.S2MID(Tile_X2Y16_S2BEG[7:0]),
 	.S2END(Tile_X2Y16_S2BEGb[7:0]),
@@ -14353,7 +14465,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X2Y17_FrameStrobe_O)
 	);
 
-	S_term_single2 Tile_X3Y17_S_term_single2 (
+	S_term_single2 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X3Y17_Emulate_Bitstream))
+`endif
+	Tile_X3Y17_S_term_single2 (
 	.S1END(Tile_X3Y16_S1BEG[3:0]),
 	.S2MID(Tile_X3Y16_S2BEG[7:0]),
 	.S2END(Tile_X3Y16_S2BEGb[7:0]),
@@ -14370,7 +14486,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X3Y17_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X4Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X4Y17_Emulate_Bitstream))
+`endif
+	Tile_X4Y17_S_term_single (
 	.S1END(Tile_X4Y16_S1BEG[3:0]),
 	.S2MID(Tile_X4Y16_S2BEG[7:0]),
 	.S2END(Tile_X4Y16_S2BEGb[7:0]),
@@ -14388,7 +14508,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X4Y17_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X5Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X5Y17_Emulate_Bitstream))
+`endif
+	Tile_X5Y17_S_term_single (
 	.S1END(Tile_X5Y16_S1BEG[3:0]),
 	.S2MID(Tile_X5Y16_S2BEG[7:0]),
 	.S2END(Tile_X5Y16_S2BEGb[7:0]),
@@ -14406,7 +14530,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X5Y17_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X6Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X6Y17_Emulate_Bitstream))
+`endif
+	Tile_X6Y17_S_term_single (
 	.S1END(Tile_X6Y16_S1BEG[3:0]),
 	.S2MID(Tile_X6Y16_S2BEG[7:0]),
 	.S2END(Tile_X6Y16_S2BEGb[7:0]),
@@ -14424,7 +14552,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X6Y17_FrameStrobe_O)
 	);
 
-	S_term_DSP Tile_X7Y17_S_term_DSP (
+	S_term_DSP 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X7Y17_Emulate_Bitstream))
+`endif
+	Tile_X7Y17_S_term_DSP (
 	.S1END(Tile_X7Y16_S1BEG[3:0]),
 	.S2MID(Tile_X7Y16_S2BEG[7:0]),
 	.S2END(Tile_X7Y16_S2BEGb[7:0]),
@@ -14441,7 +14573,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X7Y17_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X8Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X8Y17_Emulate_Bitstream))
+`endif
+	Tile_X8Y17_S_term_single (
 	.S1END(Tile_X8Y16_S1BEG[3:0]),
 	.S2MID(Tile_X8Y16_S2BEG[7:0]),
 	.S2END(Tile_X8Y16_S2BEGb[7:0]),
@@ -14459,7 +14595,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X8Y17_FrameStrobe_O)
 	);
 
-	S_term_single Tile_X9Y17_S_term_single (
+	S_term_single 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X9Y17_Emulate_Bitstream))
+`endif
+	Tile_X9Y17_S_term_single (
 	.S1END(Tile_X9Y16_S1BEG[3:0]),
 	.S2MID(Tile_X9Y16_S2BEG[7:0]),
 	.S2END(Tile_X9Y16_S2BEGb[7:0]),
@@ -14477,7 +14617,11 @@ module eFPGA (Tile_X0Y1_A_I_top, Tile_X0Y1_A_T_top, Tile_X0Y1_A_O_top, UserCLK, 
 	.FrameStrobe_O(Tile_X9Y17_FrameStrobe_O)
 	);
 
-	S_term_RAM_IO Tile_X10Y17_S_term_RAM_IO (
+	S_term_RAM_IO 
+`ifdef EMULATION
+	#(.Emulate_Bitstream(`Tile_X10Y17_Emulate_Bitstream))
+`endif
+	Tile_X10Y17_S_term_RAM_IO (
 	.S1END(Tile_X10Y16_S1BEG[3:0]),
 	.S2MID(Tile_X10Y16_S2BEG[7:0]),
 	.S2END(Tile_X10Y16_S2BEGb[7:0]),
