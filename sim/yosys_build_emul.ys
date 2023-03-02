@@ -1,0 +1,12 @@
+hierarchy -top eFPGA_top
+setattr -set keep_hierarchy 1 eFPGA/*
+proc
+opt -fast
+flatten
+opt -fast -mux_bool -mux_undef
+opt_clean -purge
+setattr -unset keep_hierarchy *
+flatten
+opt -fast -mux_bool -mux_undef
+opt_clean -purge
+write_ilang opt.il

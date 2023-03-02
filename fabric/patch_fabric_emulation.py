@@ -8,6 +8,9 @@ with open(sys.argv[1], "r") as fi, open(sys.argv[2], "w") as fo:
             tt = m.group(1)
             tx = int(m.group(2))
             ty = int(m.group(3))
+            if ty == 0 or ty == 17:
+                fo.write(line)
+                continue
             if tt == "DSP":
                 # SuperTile, special case for now
                 emul_params = [

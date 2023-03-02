@@ -12,3 +12,4 @@ test_design/*.vhd
 *.rtl.h
 *.o
 cxxrtl_tb
+*.il
