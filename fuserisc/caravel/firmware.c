@@ -51,6 +51,16 @@ void print(const char *p)
         putchar(*(p++));
 }
 
+void print_hex(uint32_t v, int digits)
+{
+    for (int i = digits - 1; i >= 0; i--) {
+        char c = "0123456789abcdef"[(v >> (4*i)) & 15];
+        putchar(c);
+    }
+}
+
+volatile uint32_t *mprj_space = (volatile uint32_t *)0x30000000;
+
 void main()
 {
     int i, j, k;
@@ -59,11 +69,36 @@ void main()
     reg_gpio_mode0 = 0;
     reg_gpio_ien = 1;
     reg_gpio_oe = 1;
+    reg_wb_enable = 1;
+    reg_hkspi_disable = 1;
+
+    reg_mprj_io_3 = 0x1800;
+    reg_mprj_io_2 = 0x400;
+    reg_mprj_io_1 = 0xc00;
+    reg_mprj_io_0 = 0x1800;
+    reg_mprj_xfer = 1;
+    while ((reg_mprj_xfer & 0x1) == 1);
+
+    reg_mprj_datal = 0x3;
+    reg_mprj_datah = 0x0;
+
+    print("IO readback: ");
+    print_hex(reg_mprj_datah, 8);
+    print(" ");
+    print_hex(reg_mprj_datal, 8);
+    print("\n");
 
     while (1) {
 
         print("Hello world!\n");
-        delay(800000);
+        // delay(800000);
+
+        mprj_space[0] = 0xdeadbeef;
+        print("Readback = ");
+        print_hex(mprj_space[0], 8);
+        print(" ");
+        print_hex(mprj_space[1], 8);
+        print("\n");
 
         /* reg_gpio_out = 1; // OFF
         reg_mprj_datal = 0x00000000;
