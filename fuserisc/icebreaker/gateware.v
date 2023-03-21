@@ -47,6 +47,24 @@ module top(
 	assign LEDG_N = ~P1A2;
 	assign FLASH_IO2 = 1'b1;
 	assign FLASH_IO3 = 1'b1;
+	// quasi-UART console to real UART bridge
+	wire [7:0] uart_data;
+	wire uart_valid;
+
+	quasi_uart_rx urx_i (
+		.sys_clk(CLK),
+		.gpio(P1A2),
+		.uart_data(uart_data),
+		.uart_valid(uart_valid)
+	);
+
+	uart_tx #(.clk_freq(12000000), .baud(115200)) utx_i (
+		.clk(CLK),
+		.tx_start(uart_valid),
+		.tx_data(uart_data),
+		.tx(TX)
+	);
+
 endmodule
 
 // Flash MITM
@@ -63,11 +81,11 @@ module flash_mitm (
 	input cpu_sclk,
 	input cpu_csb,
 	input cpu_d0,
-	output reg cpu_d1,
+	output cpu_d1,
 
-	output reg flash_sclk,
-	output reg flash_csb,
-	output reg flash_d0,
+	output flash_sclk,
+	output flash_csb,
+	output flash_d0,
 	input flash_d1
 );
 
@@ -138,12 +156,94 @@ module flash_mitm (
 		end
 	end
 
-	// adds latency but we have margin
-	always @(posedge sys_clk) begin
-		flash_sclk <= pup ? pup_clk : cpu_sclk;
-		flash_csb <= pup ? pup_csb : cpu_csb;
-		flash_d0 <= pup ? pup_d0 : (cpu_d0 | force_d0);
-		cpu_d1 <= flash_d1;
-	end
+	assign flash_sclk = pup ? pup_clk : cpu_sclk;
+	assign flash_csb = pup ? pup_csb : cpu_csb;
+	assign flash_d0 = pup ? pup_d0 : (cpu_d0 | force_d0);
+	assign cpu_d1 = flash_d1;
 
 endmodule
+
+// quasi uart receiver
+module quasi_uart_rx (
+	input sys_clk,
+	input gpio,
+	output [7:0] uart_data,
+	output reg uart_valid
+);
+
+	localparam DIV = 8;
+	localparam T_LOW = 5*DIV;
+	localparam T_TIMEOUT = 30000;
+
+	reg gpio_reg;
+	always @(posedge sys_clk) begin
+		gpio_reg <= gpio;
+	end
+
+	reg [15:0] ctr;
+	reg [2:0] state;
+	reg [7:0] sr;
+	reg [2:0] curr_bit;
+
+	always @(posedge sys_clk) begin
+		uart_valid <= 1'b0;
+		case (state)
+			3'b000: if (gpio_reg) begin // idle
+				state = 3'b0001;
+				ctr <= 0;
+				curr_bit <= 0;
+			end
+			3'b001: begin // start (ignored)
+				if (!(&ctr))
+					ctr <= ctr + 1'b1;
+				if (!gpio_reg) begin
+					if (ctr >= T_TIMEOUT)
+						state <= 3'b000;
+					else begin
+						ctr <= 0;
+						state <= 3'b010;
+					end
+				end
+			end
+			3'b010: begin // gap
+				if (!(&ctr))
+					ctr <= ctr + 1'b1;
+				if (gpio_reg) begin
+					if (ctr >= T_TIMEOUT)
+						state <= 3'b000;
+					else begin
+						ctr <= 0;
+						state <= 3'b011;
+					end
+				end
+			end
+			3'b011: begin // rx
+				if (!(&ctr))
+					ctr <= ctr + 1'b1;
+				if (!gpio_reg) begin
+					if (ctr >= T_TIMEOUT)
+						state <= 3'b000;
+					else begin
+						sr <= {sr[6:0], (ctr < T_LOW)};
+						ctr <= 0;
+						if (curr_bit == 7)
+							state <= 3'b100;
+						else
+							state <= 3'b010;
+						curr_bit <= curr_bit + 1'b1;
+					end
+				end
+			end
+			3'b100: begin // done
+				uart_valid <= 1'b1;
+				state <= 3'b000;
+			end
+			default: state = 3'b000;
+		endcase
+	end
+
+	// assign uart_data = sr;
+	assign uart_data = sr;
+endmodule
+
+`include "uart.v"
