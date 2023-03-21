@@ -1,16 +1,16 @@
 all: gateware.bin
 
 %.json: %.v
-	yosys -p "synth_ice40 -json $@ -top top" $^
+	yosys -qp "synth_ice40 -json $@ -top top" $^
 
 %.asc: %.json icebreaker.pcf
 	nextpnr-ice40 --up5k --package sg48 --json $< --pcf icebreaker.pcf --asc $@
 
 %.bin: %.asc
-	icepack $< $@
+	icepack -s $< $@
 
 prog: gateware.bin
-	iceprog gateware.bin
+	iceprog -k gateware.bin
 
 .PRECIOUS: gateware.json gateware.asc gateware.bin
 .PHONY: prog
