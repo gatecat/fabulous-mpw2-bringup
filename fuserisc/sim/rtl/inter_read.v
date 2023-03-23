@@ -61,14 +61,14 @@ module inter_read #(
       
                 for (i = 0; i < ROSLAVES; i = i + 1)  
                 always @(*)
-                begin
+                begin : arb0
                         integer j;
                         for (j = 0; j < ROMASTERS; j = j + 1)
                                 arbiter_request[(i * ROMASTERS) + j] = (  master_data_addr_i[(j * ROMASTER_ADDR_WIDTH + (SLAVE_ADDR_WIDTH )) +: $clog2(ROSLAVES)]   == i )? master_data_req_i[j] : 0;
                 end
                 for (i = 0; i < ROMASTERS; i = i + 1)
                         begin : sv2v_autoblock_1
-                           always @(*)begin
+                           always @(*)begin : arb1
                                 reg local_arb_grant;
                                 local_arb_grant = 1'b0;
                                 begin : sv2v_autoblock_2
@@ -98,16 +98,16 @@ module inter_read #(
          generate
                  for ( a = 0; a < ROSLAVES; a = a + 1)
                         begin : slave_out1
-                          
+                                integer t;
+
                                 always @(*)
-                                begin 
+                                begin : arb3
                                         
                                         slave_data_addr_o[a * SLAVE_ADDR_WIDTH+:SLAVE_ADDR_WIDTH] = 0;
                                       
                                         
 
                                         slave_data_req_o[a] = 0;
-                                        integer t;
                                         for (t = 0; t < ROMASTERS; t = t + 1)
                                         begin : slave_out2
                                                 
@@ -130,12 +130,12 @@ module inter_read #(
         generate
         for (i = 0; i < ROMASTERS; i = i + 1)
                 begin :m_data1
+                        integer k;
                         always @(*)                       
                         begin :m_data2
                                 master_data_rdata_o[i * DATA_WIDTH+:DATA_WIDTH] = 0;
                                 master_data_rvalid_o[i] = 0;
                                 master_data_gnt_o[i] = 0;
-                                integer k;
                                 for (k = 0; k < ROSLAVES; k = k + 1)
                                 begin
                                         if (arbiter_grant[(k * ROMASTERS) + i] == 1'b1) 

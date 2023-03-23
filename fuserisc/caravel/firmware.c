@@ -69,15 +69,24 @@ void main()
     reg_gpio_mode0 = 0;
     reg_gpio_ien = 1;
     reg_gpio_oe = 1;
-    reg_wb_enable = 1;
+    mprj_wb_iena_out_write(1);
     reg_hkspi_disable = 1;
 
-    reg_mprj_io_3 = 0x1800;
-    reg_mprj_io_2 = 0x400;
-    reg_mprj_io_1 = 0xc00;
-    reg_mprj_io_0 = 0x1800;
+    reg_mprj_io_3 = 0x1801;
+    reg_mprj_io_2 = 0x401;
+    reg_mprj_io_1 = 0xc01;
+    reg_mprj_io_0 = 0x1801;
     reg_mprj_xfer = 1;
     while ((reg_mprj_xfer & 0x1) == 1);
+
+    reg_mprj_datal = 0x0;
+    reg_mprj_datah = 0x0;
+
+    print("IO readback: ");
+    print_hex(reg_mprj_datah, 8);
+    print(" ");
+    print_hex(reg_mprj_datal, 8);
+    print("\n");
 
     reg_mprj_datal = 0x3;
     reg_mprj_datah = 0x0;
@@ -86,6 +95,10 @@ void main()
     print_hex(reg_mprj_datah, 8);
     print(" ");
     print_hex(reg_mprj_datal, 8);
+    print("\n");
+
+    print("Power good: ");
+    print_hex(reg_power_good, 4);
     print("\n");
 
     while (1) {

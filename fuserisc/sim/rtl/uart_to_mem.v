@@ -39,7 +39,7 @@ module uart_to_mem (
 	output reg data_we_o;
 	output [3:0] data_be_o;
 	output [31:0] data_wdata_o;
-	input reg [31:0] data_rdata_i;
+	input [31:0] data_rdata_i;
 	input data_rvalid_i;
 	input data_gnt_i;
 	output uart_error;

@@ -145,7 +145,6 @@ int main(int argc, char *argv[]) {
             hcnt = 0;
             vcnt++;
             if (render_time() >= (last_flush + 16000)) {
-                fprintf(stderr, "flip!\n");
                 flush_rgb();
                 last_flush = render_time();
             }

@@ -8,3 +8,7 @@ module sky130_fd_sc_hd__buf_2(input A, output X);
 endmodule
 
 
+module sky130_fd_sc_hd__mux2_1(input A0, A1, S, output X);
+	assign X = S ? A1 : A0;
+endmodule
+

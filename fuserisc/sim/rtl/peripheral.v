@@ -47,7 +47,7 @@ module peripheral (
 	reg [DATA_WIDTH - 1:0] s_axis_tdata_uart;
 	reg s_axis_tvalid_uart;
 	wire s_axis_tready_uart;
-	reg [DATA_WIDTH - 1:0] m_axis_tdata_uart;
+	wire [DATA_WIDTH - 1:0] m_axis_tdata_uart;
 	wire m_axis_tvalid_uart;
 	reg m_axis_tready_uart;
 	wire tx_busy_uart;

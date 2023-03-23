@@ -73,7 +73,7 @@ module inter #(
         
                 for (i = 0; i < SLAVES; i = i + 1)  
                 always @(*)
-                begin
+                begin : arb1
                         integer j;
                         for (j = 0; j < MASTERS; j = j + 1) begin
                                 arbiter_request[(i * MASTERS) + j] = (  master_data_addr_i[(j * MASTER_ADDR_WIDTH + (SLAVE_ADDR_WIDTH )) +: $clog2(SLAVES)]   == i )? master_data_req_i[j] : 0;
@@ -81,7 +81,7 @@ module inter #(
                 end
                 for (i = 0; i < MASTERS; i = i + 1)
                         begin : sv2v_autoblock_1
-                           always @(*)begin
+                           always @(*)begin : arb2
                                 reg local_arb_grant;
                                 local_arb_grant = 1'b0;
                                 begin : sv2v_autoblock_2
@@ -110,7 +110,8 @@ module inter #(
          generate
                  for ( a = 0; a < SLAVES; a = a + 1)
                         begin : slave_out1
-                          
+                                integer t;
+
                                 always @(*)
                                 begin 
                                         
@@ -119,7 +120,6 @@ module inter #(
                                         slave_data_be_o[a * (DATA_WIDTH / 8)+:DATA_WIDTH / 8] = 0;
                                         slave_data_wdata_o[a * DATA_WIDTH+:DATA_WIDTH] = 0;
                                         slave_data_req_o[a] = 0;
-                                        integer t;
                                         for ( t = 0; t < MASTERS; t = t + 1)
                                         begin : slave_out2
                                                 
@@ -142,12 +142,12 @@ module inter #(
         generate
         for (i = 0; i < MASTERS; i = i + 1)
                 begin :m_data1
+                        integer k;
                         always @(*)                       
                         begin :m_data2
                                 master_data_rdata_o[i * DATA_WIDTH+:DATA_WIDTH] = 0;
                                 master_data_rvalid_o[i] = 0;
                                 master_data_gnt_o[i] = 0;
-                                integer k;
                                 for (k = 0; k < SLAVES; k = k + 1)
                                 begin
                                         if (arbiter_grant[(k * MASTERS) + i] == 1'b1) 
