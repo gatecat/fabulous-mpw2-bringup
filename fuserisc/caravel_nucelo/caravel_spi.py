@@ -98,3 +98,31 @@ def run():
     # use fast clock for configuration
     fpga_clksel0.value(1)
     fpga_clksel1.value(0)
+
+    # load bitstream, check receive LED
+    ctrl_word = 0x0000FAB1
+    # make sure we start desynced
+    data = bytes(0xFF for i in range(128))
+    with open("counter.bin", mode='rb') as f:
+        data += f.read()
+    for i, byte in enumerate(data):
+        for j in range(8):
+            fpga_sdata.value((byte >> (7-j)) & 0x1)
+            # tog_clk()
+            fpga_sclk.value(1)
+            # tog_clk()
+            fpga_sdata.value((ctrl_word >> (31-(8*(i%4) + j))) & 0x1)
+            # tog_clk()
+            fpga_sclk.value(0)
+            # tog_clk()
+        if (i % 100) == 0:
+            print("{}".format(i))
+
+    fpga_out = [Pin(f'IO_{i+17}', mode=Pin.IN, pull=0) for i in range (10)]
+
+    for i in range(1000):
+        b = 0
+        for k, p in enumerate(fpga_out):
+            if p.value():
+                b |= (1 << k)
+        print("out: {:010b}".format(b))
