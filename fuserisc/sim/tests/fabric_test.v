@@ -42,12 +42,12 @@ module testbench;
     assign io_in[4] = s_data; // s_data
     assign io_in[5] = 1'b1; // rx
     assign io_in[16:6] = 1'b0; // other cruft
-    assign io_in[25:7] = O_top; // fabric in
+    assign io_in[25:17] = O_top; // fabric in
     assign io_in[37:26] = 1'b0;
 
     integer timeout;
 
-    localparam MAX_BITBYTES=16384;
+    localparam MAX_BITBYTES=19200;
     reg [7:0] bitstream[0:MAX_BITBYTES-1];
     localparam [31:0] ctrl_word = 32'h0000FAB1;
 
@@ -67,7 +67,7 @@ module testbench;
         repeat (100) @(posedge clk);
         rst = 1'b0;
         repeat (100) @(posedge clk);
-        #5;
+        #2500;
 
         for (i = 0; i < MAX_BITBYTES; i = i + 4) begin
             if ((i % 100) == 0)

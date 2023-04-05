@@ -118,7 +118,10 @@ def run():
         if (i % 100) == 0:
             print("{}".format(i))
 
-    fpga_out = [Pin(f'IO_{i+17}', mode=Pin.IN, pull=0) for i in range (10)]
+    fpga_rst = Pin(f'IO_17', mode=Pin.OUT, pull=0)
+    fpga_rst.value(1)
+    fpga_rst.value(0)
+    fpga_out = [Pin(f'IO_{i+18}', mode=Pin.IN, pull=0) for i in range (9)]
 
     for i in range(1000):
         b = 0

@@ -3061,6 +3061,15 @@ module eFPGA_CPU_top(wb_clk_i, wb_rst_i, wbs_stb_i, wbs_cyc_i, wbs_we_i, wbs_sel
     .Tile_X3Y9_RES2_O3(\W_RES2[0] ),
     .UserCLK(CLK)
   );
+`ifdef NO_SOC
+  // faster fabric simulation
+  assign SelfWriteData = 32'b0;
+  assign SelfWriteStrobe = 1'b0;
+  assign E_OPA = 1'b0;
+  assign E_OPB = 1'b0;
+  assign W_OPA = 1'b0;
+  assign W_OPB = 1'b0;
+`else
   forte_soc_top forte_soc_top_i (
     .debug_req_1_i(debug_req_1),
     .debug_req_2_i(debug_req_2),
@@ -3110,4 +3119,5 @@ module eFPGA_CPU_top(wb_clk_i, wb_rst_i, wbs_stb_i, wbs_cyc_i, wbs_we_i, wbs_sel
     .wbs_stb_i(wbs_stb_i),
     .wbs_we_i(wbs_we_i)
   );
+`endif
 endmodule
