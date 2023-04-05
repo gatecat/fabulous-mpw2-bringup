@@ -94,10 +94,20 @@ def run():
 
     fpga_rxled = Pin('IO_6', mode=Pin.IN, pull=0)
     last_rxled = False
+    rxled_tgl = 0
 
-    # use fast clock for configuration
-    fpga_clksel0.value(1)
+    # use slow clock for configuration
+    fpga_clksel0.value(0)
     fpga_clksel1.value(0)
+
+    def tog_clk():
+        nonlocal last_rxled, rxled_tgl
+        for i in range(4):
+            fpga_clk.value(0)
+            fpga_clk.value(1)
+            if fpga_rxled.value() != last_rxled:
+                rxled_tgl += 1
+                last_rxled = fpga_rxled.value()
 
     # load bitstream, check receive LED
     ctrl_word = 0x0000FAB1
@@ -108,15 +118,20 @@ def run():
     for i, byte in enumerate(data):
         for j in range(8):
             fpga_sdata.value((byte >> (7-j)) & 0x1)
-            # tog_clk()
+            tog_clk()
             fpga_sclk.value(1)
-            # tog_clk()
+            tog_clk()
             fpga_sdata.value((ctrl_word >> (31-(8*(i%4) + j))) & 0x1)
-            # tog_clk()
+            tog_clk()
             fpga_sclk.value(0)
-            # tog_clk()
+            tog_clk()
         if (i % 100) == 0:
             print("{}".format(i))
+    print("rxled toggles {} times".format(rxled_tgl))
+
+    # use fast clock for running
+    fpga_clksel0.value(1)
+    fpga_clksel1.value(0)
 
     fpga_rst = Pin(f'IO_17', mode=Pin.OUT, pull=0)
     fpga_rst.value(1)
